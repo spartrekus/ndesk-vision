@@ -7,6 +7,7 @@
 // Main //
 //////////////////////////////////////////
 
+
 #include <stdio.h>
 #if defined(__linux__)
 #define MYOS 1
@@ -21,8 +22,6 @@
 #define MYOS 0
 #endif
 
-
-
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h> 
@@ -31,7 +30,6 @@
 #include <sys/types.h>
 #include <unistd.h>  
 #include <time.h>
-
 
 int rows,cols; 
 int ndesktop_gameover = 0;
@@ -56,6 +54,7 @@ int ndesk_show_status_path = 0;
 
 
 
+
 void gfxrectangle( int y1, int x1, int y2, int x2 )
 {
     int foo, fooy , foox ;
@@ -64,6 +63,8 @@ void gfxrectangle( int y1, int x1, int y2, int x2 )
      for( foox = x1 ; foox <= x2 ; foox++) 
       mvaddch( fooy , foox , ' ' );
 }
+
+
 
 void gfxframe( int y1, int x1, int y2, int x2 )
 {
@@ -719,6 +720,11 @@ char *strninput( char *myinitstring )
   if ( ch == 8 ) 
     strncpy( strmsg, strcut( strmsg, 1 , strlen( strmsg ) -1 )  ,  PATH_MAX );
 
+   else if ( ch == 4 ) strncpy( strmsg, strtimestamp() ,  PATH_MAX );
+
+   else if ( ch == 2 ) strncpy( strmsg,  ""  ,  PATH_MAX );
+
+
   else if ( ch == 27 )  
   {
     strncpy( strmsg, ""  ,  PATH_MAX );
@@ -734,8 +740,7 @@ char *strninput( char *myinitstring )
   else if ( ch == 263 )  
     strncpy( strmsg, strcut( strmsg, 1 , strlen( strmsg ) -1 )  ,  PATH_MAX );
 
- else if ( ch == 4 ) 
-    strncpy( strmsg, ""  ,  PATH_MAX );
+
 
 		  else if ( ch == 4 ) 
 		  {
@@ -1038,7 +1043,21 @@ void ndesk_menu_beon() // super BEON User GUI menu
 
 
 
-
+void ndesk_main_menu()
+{
+               attroff( A_BOLD ); attroff( A_REVERSE ); curs_set( 1 );
+               color_set( 13, NULL ); attroff( A_REVERSE );
+               gfxrectangle( rows*25/100, cols*25/100 , rows*75/100, cols*75/100 );
+               gfxframe( rows*25/100, cols*25/100 , rows*75/100, cols*75/100 );
+               color_set( 17, NULL ); attron( A_REVERSE );
+               mvcenter( rows*25/100, "| Menu |" );
+               color_set( 13, NULL ); attroff( A_REVERSE );
+               //mvprintw( rows*25/100 +2, cols*25/100+2, "=: NDESK Bash Command" );
+               mvprintw( rows*25/100 +3, cols*25/100+2, "q: NDESK Quit!" );
+               color_set( 5, NULL ); attron( A_REVERSE );
+               mvcenter( rows*75/100 -1, "[ Esc: Cancel ]" );
+               getch();
+}
 
 
 void ndesk_menu_parameters()
@@ -1166,6 +1185,15 @@ void ndesk_menu_actions_compiler()
 ////////////////////////////////////////////////
 int main( int argc, char *argv[])
 {
+      ////////////////////////////////////////////////////////
+      if ( argc == 2)
+      if ( strcmp( argv[1] , "--time" ) ==  0 )
+      {
+           printf("%s\n", strtimestamp() );
+           return 0;
+      }
+
+
     DIR *curdir;
     struct dirent *entry;
 
@@ -1227,7 +1255,8 @@ int main( int argc, char *argv[])
     int nwin_show_winpath = 0;
     strncpy( nwin_currentfile, "" , PATH_MAX);
 
-    void ndesktop_tile_wins( ){
+    void ndesktop_tile_wins( ) 
+    {
       for( foo = 1 ; foo <= 20 ; foo++)
       {
         nwin_x1[foo]= 2+foo;
@@ -1237,6 +1266,7 @@ int main( int argc, char *argv[])
       }
     }
     ndesktop_tile_wins( );
+
 
     for( foo = 1 ; foo <= 20 ; foo++)
     {
@@ -3346,7 +3376,12 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 
 
 
-
+   foo = 1;
+   nwin_x1[foo]= 2; nwin_x2[foo]= cols/2-1;
+   nwin_y1[foo]= 3; nwin_y2[foo]= rows-4;
+   foo = 2;
+   nwin_x1[foo]= cols/2+1; nwin_x2[foo]= cols-2;
+   nwin_y1[foo]= 3; nwin_y2[foo]= rows-4;
 
    // sel the first winframe #1
    nwin_show[ 1 ] = 1; nwin_app[ 1 ] = 1; winsel = 1;
@@ -3687,7 +3722,7 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
            case 'W':
               tinynrwall( 1 ); // nice ghost
 	      break;
-           case 'Q':
+           case 'T':
               tinynrwall( 2 ); // tiny
 	      break;
 
@@ -3884,19 +3919,23 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                 nc_file_rename( fileselection );
 	      break;
 
-           //(case KEY_F(3):
-           case KEY_F(9):
-              //getmaxyx( stdscr, rows, cols);
+
+           case KEY_F(3):
+           case KEY_F(8):
 	      //if ( fexist( nwin_file[winsel] ) == 1 ) ncurses_runwith( " tcview ", nwin_file[ winsel ]  ); 
               getmaxyx( stdscr, rows, cols);
               ndesk_menu_desktop(); 
 	      break;
 
-
-           case KEY_F(4):
-              getmaxyx( stdscr, rows, cols);
-	      if ( fexist( nwin_file[winsel] ) == 1 ) ncurses_runwith( " tcedit ", nwin_file[ winsel ]  ); 
+           case KEY_F(9):
+              ndesk_main_menu();
 	      break;
+
+
+           //case KEY_F(4):
+              //getmaxyx( stdscr, rows, cols);
+	      //if ( fexist( nwin_file[winsel] ) == 1 ) ncurses_runwith( " tcedit ", nwin_file[ winsel ]  ); 
+	      //break;
 
   /*
 	  case KEY_F(5):
@@ -3944,6 +3983,7 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
               break;
 
 
+         /*
 	   case 'T':
 	      if ( ( nwin_app[ winsel ] == 1 ) || ( nwin_app[ winsel ] == 2 ) )
 	      {
@@ -3963,6 +4003,7 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 	      }
               ch = 0;  
            break;
+           */
 
 
 
@@ -4000,12 +4041,9 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 
 
 
-	 
-              
-
-
            //////////////////
-	   case KEY_F(5):
+           case KEY_F(4):
+              getmaxyx( stdscr, rows, cols);
               ch = ndesk_menu_choice( "1: Copy File", "2: Paste File" );
               if ( ch == '1') 
 	      {
@@ -4065,6 +4103,76 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 	      }
               ch = 0;
               break;
+
+
+
+
+
+
+
+#if defined(__linux__)
+	   case KEY_F(5):
+               strncpy( nwin_currentfile, nwin_file[ winsel ] , PATH_MAX );
+               strncpy( nwin_currentpath, nwin_path[ winsel ] , PATH_MAX );
+               strncpy( nwin_currentfile, nwin_file[ winsel ] , PATH_MAX );
+               if ( nwin_show[ 1 ] == 1 )
+               if ( nwin_show[ 2 ] == 1 )
+               if (( winsel == 1 ) || ( winsel == 2 ))
+	       if ( ( fexist( nwin_currentfile ) == 2 )
+	       || ( fexist( nwin_currentfile ) == 1 ))
+               {
+                   chdir( nwin_currentpath );
+                   strncpy( cmdi, " cp -r -v  " , PATH_MAX );
+                   strncat( cmdi , " \"" , PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi ,   nwin_currentfile  , PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi , "\" " , PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi , "  " , PATH_MAX - strlen(cmdi) - 1);
+                   if ( winsel == 2 ) foo = 1; else if ( winsel == 1 ) foo = 2; 
+                   strncat( cmdi , " \"" , PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi , nwin_path[ foo ] ,  PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi , "\" " , PATH_MAX - strlen(cmdi) - 1);
+                   color_set( 0, NULL ); attron( A_REVERSE ); 
+                   mvprintw( 1,0," PATH:%s", getcwd( cwd, PATH_MAX) );
+                   mvprintw( 3,0," CMD:%s", cmdi );
+                   foo = ncwin_question( "copy this file ?" );
+                   if ( foo == 1 )   ncurses_runcmd( cmdi );
+               }
+               break;
+
+
+	   case KEY_F(6):
+               strncpy( nwin_currentfile, nwin_file[ winsel ] , PATH_MAX );
+               strncpy( nwin_currentpath, nwin_path[ winsel ] , PATH_MAX );
+               strncpy( nwin_currentfile, nwin_file[ winsel ] , PATH_MAX );
+               if ( nwin_show[ 1 ] == 1 )
+               if ( nwin_show[ 2 ] == 1 )
+               if (( winsel == 1 ) || ( winsel == 2 ))
+	       if ( ( fexist( nwin_currentfile ) == 2 )
+	       || ( fexist( nwin_currentfile ) == 1 ))
+               {
+                   chdir( nwin_currentpath );
+                   strncpy( cmdi, " mv -v  " , PATH_MAX );
+                   strncat( cmdi , " \"" , PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi ,   nwin_currentfile  , PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi , "\" " , PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi , "  " , PATH_MAX - strlen(cmdi) - 1);
+                   if ( winsel == 2 ) foo = 1; else if ( winsel == 1 ) foo = 2; 
+                   strncat( cmdi , " \"" , PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi , nwin_path[ foo ] ,  PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi , "\" " , PATH_MAX - strlen(cmdi) - 1);
+                   color_set( 0, NULL ); attron( A_REVERSE ); 
+                   mvprintw( 1,0," PATH:%s", getcwd( cwd, PATH_MAX) );
+                   mvprintw( 3,0," CMD:%s", cmdi );
+                   foo = ncwin_question( "copy this file ?" );
+                   if ( foo == 1 ) 
+                   {
+                      foo = ncwin_question( "copy this file (sure)?" );
+                      if ( foo == 1 ) 
+                        ncurses_runcmd( cmdi );
+                   }
+               }
+               break;
+#endif
 
 
 
@@ -4192,6 +4300,7 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                    if ( strcmp( cmdi , "nc" ) == 0 ) ncurses_runcmd( "nc" );
 
                    else if ( strcmp( cmdi , "rox" ) == 0 ) ncurses_runcmd( "rox" );
+                   else if ( strcmp( cmdi , "xterm" ) == 0 ) ncurses_runcmd( "xterm -bg black -fg green " );
 
                    else if ( strcmp( cmdi , "tcsp" ) == 0 ) ncurses_runcmd( "tcsp" );
                    else if ( strcmp( cmdi , "tcs" ) == 0 ) ncurses_runcmd(  "tcs" );
@@ -4202,6 +4311,7 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                    { crossgraphvga_colors( ); getch( ); }
 
                    else if ( strcmp( cmdi , "keys" ) == 0 )    win_keypress();
+                   else if ( strcmp( cmdi , "key" ) == 0 )    win_keypress();
 
                    else if ( strcmp( cmdi , "nconsole" ) == 0 ) ncurses_runcmd( "nconsole" );
                    else if ( strcmp( cmdi , "nconsole2" ) == 0 ) ncurses_runcmd( "nconsole2" );
