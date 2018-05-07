@@ -55,6 +55,15 @@ int ndesk_tinygrep_count = 0;
 
 
 
+void gfxhline( int y1, int x1, int x2 )
+{
+    int foox ;
+    for( foox = x1 ; foox <= x2 ; foox++) 
+        mvaddch( y1 , foox , ' ' );
+}
+
+
+
 
 void gfxrectangle( int y1, int x1, int y2, int x2 )
 {
@@ -87,6 +96,10 @@ void gfxframe( int y1, int x1, int y2, int x2 )
     mvaddch( y2 , x1 , ACS_LLCORNER );
     mvaddch( y2 , x2 , ACS_LRCORNER );
 }
+
+
+
+
 
 
 #include "editor.c"
@@ -1211,6 +1224,8 @@ int main( int argc, char *argv[])
 
     DIR *curdir;
     struct dirent *entry;
+    
+    int targetwinframe = 0;
 
     strncpy( ndesk_statusbar, "", PATH_MAX );
     char pathbefore[PATH_MAX];
@@ -3459,13 +3474,16 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 	      if ( fexist( nwin_currentfile ) == 2 )
 	      {
                   chdir( nwin_currentfile );
-	          strncpy( nwin_path[winsel+1], getcwd( foocwd, PATH_MAX) , PATH_MAX);
-                  nwin_app[winsel+1] = 1; 
-                  nwin_show[winsel+1] = 1; 
-	          nwin_scrolly[winsel+1] = 0;
-	          nwin_sel[winsel+1] = 1;
+                  targetwinframe = winsel+1;
+                  if ( targetwinframe == 2 ) 
+                       targetwinframe = 3;
+	          strncpy( nwin_path[targetwinframe], getcwd( foocwd, PATH_MAX) , PATH_MAX);
+                  nwin_app[targetwinframe] = 1; 
+                  nwin_show[targetwinframe] = 1; 
+	          nwin_scrolly[targetwinframe] = 0;
+	          nwin_sel[targetwinframe] = 1;
 		  ////////
-		  winsel++;
+		  winsel = targetwinframe;
 	      }
 	      break;
 
@@ -3578,7 +3596,8 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
           attroff( A_BOLD );
           attroff( A_UNDERLINE );
           attroff( A_REVERSE );
-          mvprintw( rows-1 , 0 , "|%s|", getcwd( cwd, PATH_MAX ) );
+          gfxhline( rows-3, 0, cols -1 );
+          mvprintw( rows-3 , 0 , "|%s|", getcwd( cwd, PATH_MAX ) );
     }
 
     if ( ndesk_show_statusbar == 1 )
