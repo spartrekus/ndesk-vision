@@ -10,7 +10,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
 #include <string.h>
 #include <dirent.h> 
 #include <ctype.h>
@@ -4038,12 +4037,13 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 	      break;
 
 
-           case 'q':
+           case 'Q':
               ncolor_white(  ); attroff( A_BOLD ); 
+              mvprintw( 0,0, "Q" );
 	      ndesktop_gameover = 1;
 	      break;
 
-           case 'Q':
+           case 'q':
                 ncolor_white(  ); attroff( A_BOLD ); 
                 mvprintw( 0,0, "Q" );
                 nwin_app[winsel] = 1; 
