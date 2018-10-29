@@ -1089,22 +1089,14 @@ void tinynrclock()
              mvprintw( foo++, 2, "======================" ); 
              mvprintw( foo++, 2, "-*  HELP INFO PAGE  *- " );
              mvprintw( foo++, 2, "======================" );
-             mvprintw( foo++, 2, "Key h,j,k,l,d,u: The Usual Arrows/PgUp/PgDn!");
-             mvprintw( foo++, 2, "Key ':': The ndesk internal command line");
-             mvprintw( foo++, 2, "Key 1,2...9: Active Window Frames");
-             mvprintw( foo++, 2, "Key e: Browse   (next winframe)");
-             mvprintw( foo++, 2, "Key o: Open Dir (next winframe)");
-             mvprintw( foo++, 2, "Key i: Close selected winframe");
-             mvprintw( foo++, 2, "Key r: Display File Content [Reader]");
-             mvprintw( foo++, 2, "Key t: TextViewer (tinyviewer)");
-             mvprintw( foo++, 2, "Key g: MultiFunction Key (gg, gG)");
-
-             mvprintw( foo++, 2, "Key G: TinyGrep");
-             mvprintw( foo++, 2, "Key $: Prompt for single system command" );
-
-             mvprintw( foo++, 2, "Key a: View current dir/file to next window/frame (send to)" );
-             mvprintw( foo++, 2, "Key q: Quickdir" );
-
+             mvprintw( foo++, 2, "Key Right,Left,...h,j,k,l,d,u: the Usual Arrows/PgUp/PgDn!");
+             mvprintw( foo++, 2, "Key F10 or Q: Quit this NDESK application " );
+             mvprintw( foo++, 2, "  "  );
+             mvprintw( foo++, 2, "Key i: close selected frames");
+             mvprintw( foo++, 2, "Key 1,2...9: active Window Frames");
+             mvprintw( foo++, 2, "Key ':': the ndesk internal command line");
+             mvprintw( foo++, 2, "Key o: open Dir (next winframe)");
+             mvprintw( foo++, 2, "Key r: display File Content [Reader]");
              getch();
      }
 
@@ -1184,7 +1176,6 @@ void ndesk_menu_beon() // super BEON User GUI menu
                    ndesk_menu_gameover = 1;  
                }
 
-               else if ( ch == '?' ) ndesk_help();
                else if ( ch == 'i' ) ndesk_menu_gameover = 1;
 
                else if ( ch == '0' )
@@ -4408,10 +4399,11 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                  else if ( strcmp( fextension( nwin_currentfile ) , "MP4" ) == 0 )
                    ncurses_runwith( " mplayer -fs -zoom " , nwin_currentfile ); 
 
+                 else if ( strcmp( fextension( nwin_currentfile ) , "wad" ) == 0 )
+                   ncurses_runwith( " prboom-plus " , nwin_currentfile ); 
 
                  else if ( strcmp( fextension( nwin_currentfile ) , "mpg" ) == 0 )
                    ncurses_runwith( " mplayer -fs -zoom " , nwin_currentfile ); 
-
 
                  else if ( strcmp( fextension( nwin_currentfile ) , "jpg" ) == 0 )
                    ncurses_runwith( " feh -FZ " , nwin_currentfile ); 
@@ -4758,6 +4750,7 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 
 
          case '?':
+         case KEY_F(1):
               getmaxyx( stdscr, rows, cols);
               ndesk_help();
               break;
@@ -4765,7 +4758,7 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 
 
 
-          case KEY_F(1):
+          case '*':
             if      ( ndesk_statusbar_mode == 0 ) ndesk_statusbar_mode = 1;
             else if ( ndesk_statusbar_mode == 1 ) ndesk_statusbar_mode = 2;
             else if ( ndesk_statusbar_mode == 2 ) ndesk_statusbar_mode = 3;
@@ -4775,10 +4768,8 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
             break;
 
 
-
-
-           //////////////////
-           case KEY_F(4):
+          //////////////////
+          case KEY_F(4):
               getmaxyx( stdscr, rows, cols);
               ch = ndesk_menu_choice( "1: Copy File", "2: Paste File" );
               if ( ch == '1') 
@@ -5212,8 +5203,16 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 
                    else if ( strcmp( cmdi , "ip" ) == 0 ) ncurses_runcmd( "              ip addr ; read key " );
 
+
+                   ////////////////////////////////////////////
+                   else if ( strcmp( cmdi , "fileview" ) == 0 )  // basic retro blue ncurses apps
+                       ncurses_runwith( " fileview " , nwin_file[ winsel ] ); 
+                   ////////////////////////////////////////////
+                   else if ( strcmp( cmdi , "dirview" ) == 0 )  // basic retro blue ncurses apps
+                       ncurses_runwith( " dirview " , nwin_file[ winsel ] ); 
                    else if ( strcmp( cmdi , "menu" ) == 0 )
                          ndesk_main_menu();
+                   ////////////////////////////////////////////
 
                    else if ( strcmp( cmdi , "mpall" ) == 0 ) ncurses_runcmd( " mplayer -fs -zoom * " );
                    else if ( strcmp( cmdi , "mpa" ) == 0 ) ncurses_runcmd( "   mplayer -fs -zoom * " );
