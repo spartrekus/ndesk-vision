@@ -16,6 +16,7 @@
 #include <unistd.h>  
 #include <time.h>
 
+
 ////////////////////////////////////////////////
 #if defined(__linux__) // LINUX
 #define MYOS 1
@@ -139,6 +140,25 @@ char *strreadfile( char *thefile )
 
 
 
+////////////////////////////////////////////////////////////////////
+char *strremovelf(char *str) 
+{     // copyleft, C function made by Spartrekus 
+      char ptr[strlen(str)+1];
+      int i,j=0;
+      for(i=0; str[i]!='\0'; i++)
+      {
+        if (str[i] != '\n' && str[i] != '\n') 
+        ptr[j++]=str[i];
+      } 
+      ptr[j]='\0';
+      //size_t siz = sizeof ptr ; 
+      //char *r = malloc( sizeof ptr );
+      //return r ? memcpy(r, ptr, siz ) : NULL;
+      char *base = ptr;
+      return (base);
+}
+
+
 
 
 //////////////////
@@ -171,6 +191,34 @@ void ncp( char *filetarget,  char *  filesource )
       }
 }
 
+
+void mvclear( )
+{
+    int j, i; 
+    for ( j = 0 ; ( j <= cols -1  ) ; j++) 
+     for ( i = 0; ( i <= rows -1  ) ; i++) 
+        mvaddch( i , j , ' ');
+}
+
+
+
+void mvcenter( int myposypass, char *mytext )
+{
+      mvprintw( myposypass, cols/2 - strlen( mytext )/2  , "%s", mytext );
+}
+
+
+
+
+void gfxbox( int y1, int x1, int y2, int x2 )
+{
+    int fooy, foox; 
+    for( fooy = y1 ; fooy <= y2 ; fooy++) 
+    for( foox = x1 ; foox <= x2 ; foox++) 
+    {
+         mvprintw( fooy , foox , " " );
+    }
+}
 
 
 void gfxhline( int y1, int x1, int x2 )
@@ -643,9 +691,11 @@ void nstartncurses_color_2(  )
   init_pair( 19, COLOR_MAGENTA , COLOR_BLUE);
   init_pair( 20 , COLOR_RED , COLOR_BLUE);
   init_pair( 21 , COLOR_BLUE , COLOR_YELLOW);
-  init_pair( 22, COLOR_YELLOW,   COLOR_CYAN);
-  init_pair( 23, COLOR_WHITE, COLOR_BLUE);
-  init_pair( 24, COLOR_GREEN, COLOR_BLUE);
+  init_pair( 22, COLOR_YELLOW,  COLOR_CYAN);
+  init_pair( 23, COLOR_WHITE,   COLOR_BLUE);
+  init_pair( 24, COLOR_GREEN,   COLOR_BLUE);
+  init_pair( 25, COLOR_MAGENTA, COLOR_CYAN);
+  init_pair( 26, COLOR_WHITE,   COLOR_GREEN);
 }
 
 
@@ -1074,8 +1124,66 @@ void tinynrclock()
 
 
 
+void ndesk_screenlock_text()
+{
+     int fooch ; 
+     attroff( A_BOLD ); 
+     attron( A_REVERSE ); color_set( 0, NULL );
+     gfxbox( 0 , 0 , rows-1 , cols-1 ); 
+     mvprintw( 0, 0, "=======" );
+     mvprintw( 1, 0, "Notepad" );
+     mvprintw( 2, 0, "=======" );
+     mvprintw( 3, 0, "" );
+     mvprintw( 4, 0, " Note list   " );
+     //color_set( 26 , NULL );
+     //attroff( A_REVERSE ); attroff( A_BOLD ); 
+     //printw( "." );
+     //curs_set( 0 );
+     fooch = 0; 
+     while( fooch != KEY_F(10) ) 
+     {
+        curs_set( 1 );
+        fooch = getch();
+        attron( A_REVERSE ); color_set( 0, NULL );
+        if ( fooch != 10 ) 
+           printw( "%c", fooch );
+     }
+     curs_set( 1 );
+     color_set( 0 , NULL );
+}
 
 
+      ////////////////
+        int ndesk_menu_select( char *p1, char *p2, char *p3, char *p4 , char *p5 , char *p6, char *p7)
+        {
+               int fooch = 0; int foxiy = 2; 
+               color_set( 13, NULL ); attroff( A_REVERSE );
+               gfxrectangle( rows*25/100, cols*25/100 , rows*75/100, cols*75/100 );
+               gfxframe( rows*25/100, cols*25/100 , rows*75/100, cols*75/100 );
+               color_set( 17, NULL ); attron( A_REVERSE );
+               mvcenter( rows*25/100, "| Menu File |" );
+               color_set( 13, NULL ); attroff( A_REVERSE );
+               mvprintw( rows*25/100 +foxiy++, cols*25/100+2, "%s", p1); 
+               mvprintw( rows*25/100 +foxiy++, cols*25/100+2, "%s", p2); 
+               mvprintw( rows*25/100 +foxiy++, cols*25/100+2, "%s", p3); 
+               mvprintw( rows*25/100 +foxiy++, cols*25/100+2, "%s", p4); 
+               mvprintw( rows*25/100 +foxiy++, cols*25/100+2, "%s", p5); 
+               mvprintw( rows*25/100 +foxiy++, cols*25/100+2, "%s", p6); 
+               mvprintw( rows*25/100 +foxiy++, cols*25/100+2, "%s", p7); 
+               color_set( 5, NULL ); attron( A_REVERSE );
+               mvcenter( rows*75/100 -1, "[ Esc: Cancel ]" );
+               fooch = getch();
+               return fooch ;  
+        }
+     
+
+
+
+
+
+     ////////////////////////////
+     ////////////////////////////
+     ////////////////////////////
      void ndesk_help()
      {
              int foo;
@@ -1097,27 +1205,9 @@ void tinynrclock()
              mvprintw( foo++, 2, "Key ':': the ndesk internal command line");
              mvprintw( foo++, 2, "Key o: open Dir (next winframe)");
              mvprintw( foo++, 2, "Key r: display File Content [Reader]");
+             mvprintw( rows-1, 2, "<Press Key>");
              getch();
      }
-
-
-
-
-void mvclear( )
-{
-    int j, i; 
-    for ( j = 0 ; ( j <= cols -1  ) ; j++) 
-     for ( i = 0; ( i <= rows -1  ) ; i++) 
-        mvaddch( i , j , ' ');
-}
-
-
-
-void mvcenter( int myposypass, char *mytext )
-{
-      mvprintw( myposypass, cols/2 - strlen( mytext )/2  , "%s", mytext );
-}
-
 
 
 
@@ -1133,12 +1223,13 @@ void ndesk_menu_beon() // super BEON User GUI menu
         int ch = 0; int fooquestion ; int i;  int kittux;
         while( ndesk_menu_gameover == 0)
         {
-               attroff( A_BOLD ); attroff( A_REVERSE ); curs_set( 1 );
+               attroff( A_BOLD ); attroff( A_REVERSE ); 
+               curs_set( 1 );
                color_set( 13, NULL ); attroff( A_REVERSE );
                gfxrectangle( rows*25/100, cols*25/100 , rows*75/100, cols*75/100 );
                gfxframe( rows*25/100, cols*25/100 , rows*75/100, cols*75/100 );
                color_set( 17, NULL ); attron( A_REVERSE );
-               mvcenter( rows*25/100, "| Menu BeON |" );
+               mvcenter( rows*25/100, "| Menu X11 BeON |" );
                color_set( 13, NULL ); attroff( A_REVERSE ); 
                kittux = 2;
                mvprintw( rows*25/100 +kittux++, cols*25/100+2, "?: HELP! " );
@@ -1474,6 +1565,9 @@ void ncdisplaygrep( char *thefile )
 
 
 
+
+
+
 ///////////////////////////////////////////
 void ncdisplayfile( char *thefile )
 {
@@ -1507,6 +1601,169 @@ void ncdisplayfile( char *thefile )
 
 
 
+void nappend_text( char *toutputfile , char *mytmpclip )
+{
+   FILE *fpoutput;
+   fpoutput = fopen( toutputfile, "ab+" );
+    fputs( "\n", fpoutput );
+    fputs( fbasename( mytmpclip ) , fpoutput );
+    fputs( "\n", fpoutput );
+   fclose( fpoutput );
+   strncpy( ndesk_status_message, "Appended clip to file.", PATH_MAX );
+}
+
+
+
+
+void vim_piles()
+{
+                   char cmdi[PATH_MAX];
+                   strncpy( cmdi, " vim  -p " , PATH_MAX );
+                   strncat( cmdi , " \"" , PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi , nwin_pile_path[ 1 ]  , PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi , "/" , PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi , nwin_pile_file[ 1 ]  , PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi , "\" " , PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi , "  " , PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi , " \"" , PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi , nwin_pile_path[ 2 ]  , PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi , "/" , PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi , nwin_pile_file[ 2 ]  , PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi , "\" " , PATH_MAX - strlen(cmdi) - 1);
+                   ncurses_runcmd(  cmdi );
+}
+
+
+   void printfile( char *ttuxfile )
+   {
+       int posyy = 2 ;  
+       int zui = 0 ;  FILE *fpsource;  char ptrout[PATH_MAX];
+       color_set( 7, NULL );  attron( A_REVERSE );
+       gfxbox( 0, cols/2-2, rows-1, cols-1 );
+       gfxframe( 0, cols/2-2, rows-1, cols-1 );
+
+       //while ( posyy <= rows-3 )
+       //     mvprintw( posyy++, cols/2-1 , "|" );
+       //{
+        //   mvprintw( posyy, cols/2-1 , "|" );
+
+           //if ( strstr( datacheck[posyy], "XX" ) != 0 ) color_set( 2, NULL );
+           //else if ( strstr( datacheck[posyy], "XX" ) != 0 ) color_set( 3, NULL );
+           //if      ( datacheck[posyy][0] == '!' ) color_set( 2, NULL ); 
+           //else if ( datacheck[posyy][0] == '/' ) color_set( 0, NULL ); 
+           //else if ( datacheck[posyy][0] == '#' ) color_set( 0, NULL ); 
+           //else if ( datacheck[posyy][0] == '>' ) color_set( 3, NULL ); 
+
+           if ( fexist( ttuxfile ) == 1 )
+           {  
+             mvprintw( 0, cols/2, "[FILE: %s]", fbasename( ttuxfile ) );
+             posyy = 2;
+             fpsource = fopen( ttuxfile , "r");
+             while(  !feof(fpsource) )
+             {
+                 if ( !feof(fpsource) )
+                 {
+                   fgets( ptrout , PATH_MAX , fpsource ); 
+                   if ( posyy <= rows-3 )
+                    //for( zui = 0 ; zui <= cols/2 -2 ; zui++) 
+                    for(zui=0; ptrout[zui]!='\0'; zui++)
+                     if ( ptrout[zui] != '\n' )
+                      if ( zui <=  cols/2 -2 )
+                        mvprintw( posyy, cols/2 + zui , "%c", ptrout[zui] );
+                   posyy++;
+                 }
+             }
+             fclose(fpsource);
+           }
+           //for( zui = 0 ; zui <= cols/2 -2 ; zui++) 
+           //{
+             //mvprintw( posyy, cols/2 + zui , "%c", datacheck[ posyy ][zui] );
+           //}
+   }
+
+
+/////////////////////////
+/////////////////////////
+int  nexp_user_sel = 1;
+int  nexp_user_scrolly =0 ;
+char nexp_user_fileselection[PATH_MAX]; 
+int  tc_det_dir_type = 0;
+/////////////////////////
+void printdir()
+{
+
+   DIR *dirp; int posy = 0;  int posx, chr ; 
+   int fooselection = 0;
+   posy = 1; posx = cols/2;
+   char cwd[PATH_MAX];
+   struct dirent *dp;
+   dirp = opendir( "." );
+   attron( A_REVERSE );
+
+   color_set( 7, NULL ); attron( A_REVERSE );
+   gfxbox( 0, cols/2-2, rows-1, cols-1 );
+   gfxframe( 0, cols/2-2, rows-1, cols-1 );
+
+   mvprintw( 0, cols/2, "[DIR: %s]", getcwd( cwd, PATH_MAX ) );
+   strncpy( nexp_user_fileselection, "", PATH_MAX );
+   color_set( 11, NULL ); attron( A_REVERSE );
+   int entrycounter = 0;
+   while  ((dp = readdir( dirp )) != NULL ) 
+   if ( posy <= rows-3 )
+   {
+        entrycounter++;
+        color_set( 7, NULL ); attron( A_REVERSE ); attroff( A_BOLD );
+
+        if ( entrycounter <= nexp_user_scrolly )
+              continue;
+
+        if (  dp->d_name[0] !=  '.' ) 
+        if (  strcmp( dp->d_name, "." ) != 0 )
+        if (  strcmp( dp->d_name, ".." ) != 0 )
+        {
+            posy++;  fooselection++;
+
+            if ( dp->d_type == DT_DIR ) 
+            {
+                 color_set( 12 , NULL );
+                 mvaddch( posy, posx++ , '/' );
+            }
+            else if ( dp->d_type == 0 )
+            {
+               if ( tc_det_dir_type == 1 )
+               if ( fexist( dp->d_name ) == 2 )
+               {
+                 color_set( 12 , NULL );
+                 mvaddch( posy, posx++ , '/' );
+               }
+            }
+
+            if ( nexp_user_sel == fooselection ) 
+            {
+                  strncpy( nexp_user_fileselection, dp->d_name , PATH_MAX );
+                  color_set( 6, NULL );
+            }
+
+            for ( chr = 0 ;  chr <= strlen(dp->d_name) ; chr++) 
+            {
+              if  ( dp->d_name[chr] == '\n' )
+                  posx = cols/2;
+              else if  ( dp->d_name[chr] == '\0' )
+                  posx = cols/2;
+              else
+                 mvaddch( posy, posx++ , dp->d_name[chr] );
+            }
+        }
+   }
+   closedir( dirp );
+
+   color_set( 7, NULL ); attroff( A_REVERSE );
+   //gfxhline( rows-1, 0, cols-1 );
+   mvprintw( rows-1, cols/2, "[FILE: %s]", nexp_user_fileselection );
+}
+
+
+
 
 
 ////////////////////////////////////////////////
@@ -1517,6 +1774,7 @@ void ncdisplayfile( char *thefile )
 int main( int argc, char *argv[])
 {
 
+   int foochg = 0; 
    char thefile[PATH_MAX];
    char targetfile[PATH_MAX];
    char foolinetmp[PATH_MAX];
@@ -2067,7 +2325,9 @@ int main( int argc, char *argv[])
     void colorbluebold(){ attron( A_BOLD ); attroff( A_REVERSE); color_set( 11 , NULL ); }
     void colorred(){ attron( A_BOLD ); attron( A_REVERSE); color_set( 20 , NULL ); }
     void coloryellow(){ color_set( 12 , NULL ); attron( A_BOLD ); attroff( A_REVERSE ); }
-    void colormenuyellow(){ color_set( 22 , NULL ); attron( A_BOLD ); attroff( A_REVERSE ); }
+    void colormenuyellow(){ 
+         color_set( 22 , NULL ); attron( A_BOLD ); attroff( A_REVERSE ); 
+    }
     void colordefault(){ attron(A_REVERSE ); attroff(A_REVERSE ); color_set( 18 , NULL ); attron( A_BOLD ); }
     void colordefaultrev(){ attron(A_REVERSE ); attroff(A_REVERSE ); color_set( 18 , NULL ); attroff( A_BOLD ); }
 //]]]
@@ -3062,11 +3322,37 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
     else if ( nwin_app[winsel] == 23 )
        printw( "[Listdir]" );
 
-    //chdir( nwin_path[winsel] );
+    color_set( 22 , NULL ); attron( A_BOLD ); attroff( A_REVERSE ); 
     printw( "[%s]", strcut( fbasename( getcwd( cwd, PATH_MAX) ),  1 , cols-1 -15 ) );
-    printw( "  [b:BeON-Menu]" );
+    printw( "  ");
+
+  /*
+    ////////////////
+    color_set( 22 , NULL ); 
+    printw( "[B:" );
+    color_set( 25 , NULL ); 
+    printw( "B" );
+    color_set( 22 , NULL ); 
+    printw( "oom]" );
+  */
+
+    ////////////////
+    color_set( 22 , NULL ); 
+    printw( "[F9:" );
+    color_set( 25 , NULL ); 
+    printw( "M" );
+    color_set( 22 , NULL ); 
+    printw( "enu]" );
+    ////////////////
+    color_set( 22 , NULL ); 
+    printw( "[F10:" );
+    color_set( 25 , NULL ); 
+    printw( "Q" );
+    color_set( 22 , NULL ); 
+    printw( "uit]" );
 
     //////////////////////////////////////
+    color_set( 22 , NULL ); attron( A_BOLD ); attroff( A_REVERSE ); 
     if ( winsel >= 1 )
     if ( nwin_app[ winsel ] == 2 ) 
     if ( strcmp( nwin_file[ winsel ], "" ) != 0 ) 
@@ -3906,7 +4192,11 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
            	      mvprintw( foo++, 1 , "Crt Path: %s", getcwd( foofilepath, PATH_MAX ) );
            	      mvprintw( foo++, 1 , "Crt Basename File: %s", fbasename( nwin_currentfile ) );
            	      mvprintw( foo++, 1 , "Crt Fexist File: %d", fexist( nwin_currentfile ) );
+           	      mvprintw( foo++, 1 , "ndesk Clip: %s",             ndesk_clipboard );
+           	      mvprintw( foo++, 1 , "ndesk Clip (basename): %s",  fbasename( ndesk_clipboard ));
+           	      mvprintw( foo++, 1 , "ndesk Clip (clip): %s",      ndesk_clipboard );
            	      mvprintw( foo++, 1 , "Clip: %s",        clipboard_filecopy );
+           	      mvprintw( foo++, 1 , "Clip (basename): %s",        fbasename( clipboard_filecopy ));
            	      mvprintw( foo++, 1 , "Clip (Path): %s", clipboard_filepath );
                  i = foo;
                  for( foo = 1 ; foo <= 10 ; foo++) 
@@ -4005,13 +4295,6 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
            case 'i':
            case KEY_F(10):
            case 27:
-            move_gameover = 1;
-            break; 
-
-           case 'c': // wwith m key
-            ndesktop_showcurfile();
-            ncurses_runcmd( " bash " );
-            move_gameover = 1;
             move_gameover = 1;
             break; 
 
@@ -4143,6 +4426,69 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 	        break;
 
 
+
+    case 'B':
+         ncurses_runcmd( " nmenu " );
+         break;
+
+    case 'b':
+              foochg = 0; 
+              nexp_user_sel = 1;
+              nexp_user_scrolly =0 ;
+              while ( ( foochg != 'q' ) && ( foochg != 'i' ) &&  ( foochg != 27 ) &&  ( foochg != 'b' )) 
+              { 
+                printdir(); 
+                foochg = getch();
+                if ( foochg == 'j' )      nexp_user_sel++; 
+                else if ( foochg == 'k' ) nexp_user_sel--;
+                else if ( foochg == 'g' ) { nexp_user_sel = 1; nexp_user_scrolly = 0; }
+                else if ( foochg == 'u' ) nexp_user_scrolly-=4;
+                else if ( foochg == 'd' ) nexp_user_scrolly+=4;
+                else if ( foochg == 'n' ) nexp_user_scrolly+=4;
+                else if ( foochg == 'r' ) ncurses_runwith( " tcview " , nexp_user_fileselection );
+                else if ( foochg == 'v' ) ncurses_runwith( " vim " , nexp_user_fileselection );
+                else if ( foochg == 's' ) ncurses_runwith( " clisheet " , nexp_user_fileselection );
+                else if ( foochg == 'w' ) ncurses_runwith( " cliword " , nexp_user_fileselection );
+                else if ( foochg == 'o' ) { printfile( nexp_user_fileselection ); getch();  }
+              }
+              break;
+
+
+
+
+  /*
+    case 'B':
+         foo = ndesk_menu_select( "1: Bash", "2: File explorer", "5: prboom net", "6: prboom alien", "7: eureka (wad editor)" , "h: Help" , "Q: Quit!" );
+
+         if       ( foo == '1' ) nruncmd( " bash " );
+         else if  ( foo == '2' ) nruncmd( " nexplorer " );
+         else if  ( foo == 'c' ) nruncmd( " bash " );
+         else if  ( foo == '5' ) 
+         {
+                strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
+                ncurses_runwith( " prboom-plus -net 192.168.52.11 -file " , fileselection  ); 
+         }
+
+         else if  ( foo == '6' ) 
+         {
+                strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
+                ncurses_runwith( " prboom-plus -iwad doom2.wad -file aaliens.wad  " , fileselection  ); 
+         }
+
+         else if  ( foo == '7' ) 
+         {
+                strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
+                ncurses_runwith( " eureka -iwad doom2.wad  " , fileselection  ); 
+         }
+
+         else if  ( foo == 'h' ) ndesk_help();
+         else if  ( foo == 'H' ) ndesk_help();
+         else if  ( foo == 'Q' ) ndesktop_gameover = 1;
+         else if  ( foo == 'q' ) ndesktop_gameover = 1;
+	 break;
+    */
+
+
            case '1':
            case '2':
            case '3':
@@ -4210,6 +4556,19 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 	      break;
 
            case 's':
+	    foo = nwin_sel[winsel]; 
+     	    chdir( nwin_path[ winsel ] );
+            strncpy( fileselection, nwin_currentfile , PATH_MAX );
+	    chdir(   nwin_path[ winsel ] );
+            strncpy( cmdi , " tcview  " , PATH_MAX );
+            strncat( cmdi , " \"" , PATH_MAX - strlen( cmdi ) -1 );
+            strncat( cmdi ,  nwin_file[ winsel ] , PATH_MAX - strlen( cmdi ) -1 );
+            strncat( cmdi , "\"" , PATH_MAX - strlen( cmdi ) -1 );
+	    if ( nwin_app[ winsel ] >= 1 )
+            ncurses_runcmd( cmdi );
+	    break;
+
+           case 'S':
               nwin_app[winsel] = 1; 
               nwin_file_sort[winsel] = 1; 
               strncpy( ndesk_statusbar, "Sort File Explorer" , PATH_MAX );
@@ -4256,7 +4615,6 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 
 
            case 'C':
-              //tinynrclock(); 
               nwin_app[winsel] = 6; 
 	      nwin_scrolly[winsel] = 0;
               nwinmode = 0;
@@ -4283,7 +4641,6 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 
 	 case 'a':
               ndesktop_showcurfile();
-              //if ( fexist( nwin_currentfile ) == 1 )
               ndesk_menu_actions_compiler();
 	      break;
 
@@ -4392,7 +4749,6 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                  else if ( strcmp( fextension( nwin_currentfile ) , "avi" ) == 0 )
                    ncurses_runwith( " mplayer -fs -zoom " , nwin_currentfile ); 
 
-
                  else if ( strcmp( fextension( nwin_currentfile ) , "mp4" ) == 0 )
                    ncurses_runwith( " mplayer -fs -zoom " , nwin_currentfile ); 
 
@@ -4400,6 +4756,8 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                    ncurses_runwith( " mplayer -fs -zoom " , nwin_currentfile ); 
 
                  else if ( strcmp( fextension( nwin_currentfile ) , "wad" ) == 0 )
+                   ncurses_runwith( " prboom-plus " , nwin_currentfile ); 
+                 else if ( strcmp( fextension( nwin_currentfile ) , "WAD" ) == 0 )
                    ncurses_runwith( " prboom-plus " , nwin_currentfile ); 
 
                  else if ( strcmp( fextension( nwin_currentfile ) , "mpg" ) == 0 )
@@ -4579,37 +4937,37 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
            }
            break;
 
-        case 'm':
+
+
+
+    case 'm':
+    case KEY_F(9):
+         foo = ndesk_menu_select( "1: Bash", "2: File explorer", "3: Screen lock", "4: Multimedia Box (Box app)", "5 or v: Load vim with Session (mksession)" , "h: Help" , "Q: Quit!" );
+         if       ( foo == '1' ) nruncmd( " bash " );
+         else if  ( foo == '2' ) nruncmd( " nexplorer " );
+         else if  ( foo == '3' ) ndesk_screenlock_text();
+         else if  ( foo == '4' ) nruncmd( "box" );
+         else if  ( foo == '5' ) nruncmd( " vim -S Session.vim " );
+         else if  ( foo == 'v' ) nruncmd( " vim -S Session.vim " );
+         else if  ( foo == 'V' ) vim_piles();
+         else if  ( foo == 'c' ) nruncmd( " bash " );
+         else if  ( foo == 'h' ) ndesk_help();
+         else if  ( foo == 'H' ) ndesk_help();
+         else if  ( foo == 'Q' ) ndesktop_gameover = 1;
+         else if  ( foo == 'q' ) ndesktop_gameover = 1;
+	 break;
+
+        case '"':
           getmaxyx( stdscr, rows, cols);
           attron( A_REVERSE ) ; 
           color_set( 3, NULL ) ; 
-          mvprintw( rows-1, cols-7+4 , "[m]" );
-          mvprintw( 0,0,"[m]");
+          mvprintw( 0,0,"[PILES]");
           ch = getch();
-          if      ( ch == 'c' ) ncurses_runcmd( " bash " );
-          else if ( ch == 'm' ) ndesk_move_frame( winsel );
-          else if ( ch == 'w' ) ndesk_move_frame( winsel );
-
-
-          else switch( ch )
+          switch( ch )
           { 
               case 'V':
               case 'v':
-                   strncpy( cmdi, " vim  -p " , PATH_MAX );
-                   strncat( cmdi , " \"" , PATH_MAX - strlen(cmdi) - 1);
-                   strncat( cmdi , nwin_pile_path[ 1 ]  , PATH_MAX - strlen(cmdi) - 1);
-                   strncat( cmdi , "/" , PATH_MAX - strlen(cmdi) - 1);
-                   strncat( cmdi , nwin_pile_file[ 1 ]  , PATH_MAX - strlen(cmdi) - 1);
-                   strncat( cmdi , "\" " , PATH_MAX - strlen(cmdi) - 1);
-                   strncat( cmdi , "  " , PATH_MAX - strlen(cmdi) - 1);
-                   strncat( cmdi , " \"" , PATH_MAX - strlen(cmdi) - 1);
-                   strncat( cmdi , nwin_pile_path[ 2 ]  , PATH_MAX - strlen(cmdi) - 1);
-                   strncat( cmdi , "/" , PATH_MAX - strlen(cmdi) - 1);
-                   strncat( cmdi , nwin_pile_file[ 2 ]  , PATH_MAX - strlen(cmdi) - 1);
-                   strncat( cmdi , "\" " , PATH_MAX - strlen(cmdi) - 1);
-                   //if ( fexist(  nwin_pile_file[ 1 ] ) == 1 )    
-                   // if ( fexist(  nwin_pile_file[ 2 ] ) == 1 )    
-                     ncurses_runcmd(  cmdi );
+                vim_piles();
                 break;
 
               case '1':
@@ -4623,20 +4981,46 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
               case '9':
               if ( winsel >= 1 )
 	      {
-                  //nwin_show[ ch - 48 ] = 1;
-	          //strncpy( nwin_filter[ ch -48 ], nwin_filter[ winsel ] , PATH_MAX);
-	          //strncpy( nwin_path[ ch -48 ]  , nwin_path[ winsel ] , PATH_MAX);
-	          //strncpy( nwin_file[ ch -48 ]  , nwin_file[ winsel ] , PATH_MAX);
-
 	          strncpy( nwin_pile_path[ ch -48 ]  , nwin_path[ winsel ] , PATH_MAX);
 	          strncpy( nwin_pile_file[ ch -48 ]  , nwin_file[ winsel ] , PATH_MAX);
 	          nwin_pile_app[ ch -48 ] = nwin_app[ winsel ];
+                  strncpy( ndesk_status_message, "Path Stored.", PATH_MAX );
+              }
+	      break;
+           }
+         break;
 
-                  //nwin_sel[ ch - 48] = 1;
-	          //nwin_scrolly[ ch - 48 ] = 0;
-	          //strncpy( nc_file_filter[ ch - 48 ], "", PATH_MAX);
-	          //strncpy( nwin_filter[ ch - 48 ], "", PATH_MAX);
-                  ////
+        case 'M':
+          getmaxyx( stdscr, rows, cols);
+          attron( A_REVERSE ) ; 
+          color_set( 3, NULL ) ; mvprintw( rows-1, cols-7+4 , "[m]" );
+          mvprintw( 0,0,"[m]");
+          ch = getch();
+          if      ( ch == 'c' ) ncurses_runcmd( " bash " );
+          else if ( ch == 'm' ) ndesk_move_frame( winsel );
+          else if ( ch == 'w' ) ndesk_move_frame( winsel );
+
+          else switch( ch )
+          { 
+              case 'V':
+              case 'v':
+                vim_piles();
+                break;
+
+              case '1':
+              case '2':
+              case '3':
+              case '4':
+              case '5':
+              case '6':
+              case '7':
+              case '8':
+              case '9':
+              if ( winsel >= 1 )
+	      {
+	          strncpy( nwin_pile_path[ ch -48 ]  , nwin_path[ winsel ] , PATH_MAX);
+	          strncpy( nwin_pile_file[ ch -48 ]  , nwin_file[ winsel ] , PATH_MAX);
+	          nwin_pile_app[ ch -48 ] = nwin_app[ winsel ];
                   strncpy( ndesk_status_message, "Path Stored.", PATH_MAX );
               }
 	      break;
@@ -4658,9 +5042,9 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 	      //break;
 
 
-           case 'S':
-              ndesk_menu_quickpath();
-	      break;
+           //case 'S':
+              //ndesk_menu_quickpath();
+	    //  break;
 
 
 
@@ -5204,6 +5588,8 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                    else if ( strcmp( cmdi , "ip" ) == 0 ) ncurses_runcmd( "              ip addr ; read key " );
 
 
+                   else if ( strcmp( cmdi , "hostname" ) == 0 ) ncurses_runcmd( "  hostname ; read key " );
+
                    ////////////////////////////////////////////
                    else if ( strcmp( cmdi , "fileview" ) == 0 )  // basic retro blue ncurses apps
                        ncurses_runwith( " fileview " , nwin_file[ winsel ] ); 
@@ -5268,8 +5654,10 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 
                          ncurses_runcmd( "mutt" );
 
+                   else if ( strcmp( cmdi , "tcps" ) == 0 ) ncurses_runcmd( " tcps  " );
                    else if ( strcmp( cmdi , "xterm" ) == 0 ) ncurses_runcmd( "xterm -bg black -fg green " );
                    else if ( strcmp( cmdi , "sxterm" ) == 0 ) ncurses_runcmd( " screen -d -m xterm -bg black -fg green " );
+                   else if ( strcmp( cmdi , "vim" ) == 0 ) ncurses_runcmd( " vim " );
 
                    else if ( strcmp( cmdi , "webcam" ) == 0 ) 
                         ncurses_runcmd( " mplayer -ao null -tv device=/dev/video0 tv://  ");
@@ -5402,8 +5790,7 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                    {
                         strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
                         ncurses_runwith( " xclip -o >> " , fileselection  ); 
-                        color_set( 7, NULL ); attron( A_REVERSE );
-                        attroff( A_BOLD ); 
+                        color_set( 7, NULL ); attron( A_REVERSE ); attroff( A_BOLD ); 
                         mvclear( ); 
                         mvcenter( rows*50/100 -1, "[ xclip command Completed ]" );
                         getch();
@@ -5418,17 +5805,38 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                    else if ( strcmp( cmdi , "mc" ) == 0 ) ncurses_runcmd( " mc " );
                    else if ( strcmp( cmdi , "nbash" ) == 0 ) ncurses_runcmd( " nbash " );
 
+                   else if ( strcmp( cmdi , "lotus" ) == 0 ) 
+                   {
+                        strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
+                        ncurses_runwith( " freelotus123 " , fileselection  ); 
+                   }
+
+                   else if  ( strcmp( cmdi , "display" ) == 0 )  
+                   { 
+                       color_set( 7, NULL ); attron( A_REVERSE ); attroff( A_BOLD ); mvclear( ); 
+                       mvcenter( 0, "INFORMATION" ); mvprintw( 2, 0, "DISPLAY: %d %d", rows, cols ); getch();   }
+
                    else if ( strcmp( cmdi , "lbo" ) == 0 ) 
                    {
                         strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
                         ncurses_runwith( " libreoffice " , fileselection  ); 
                    }
 
+                   else if ( strcmp( cmdi , "clip2file" ) == 0 ) 
+                   {
+                        strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
+                        if ( fexist( fileselection ) == 1 )
+                          nappend_text( fileselection  , ndesk_clipboard ); 
+                   }
+
+
                    else if ( strcmp( cmdi , "colors" ) == 0 )
                    { crossgraphvga_colors( ); getch( ); }
 
+
                    else if ( strcmp( cmdi , "keys" ) == 0 )    win_keypress();
                    else if ( strcmp( cmdi , "key" ) == 0 )     win_keypress();
+
                    else if ( strcmp( cmdi , "keypress" ) == 0 )     win_keypress();
 
                    else if ( strcmp( cmdi , "nconsole" ) == 0 )   ncurses_runcmd( "nconsole" );
@@ -5463,13 +5871,10 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 	    chdir(   nwin_path[ winsel ] );
             strncpy( cmdi , "  vim -p " , PATH_MAX );
             strncat( cmdi , " \"" , PATH_MAX - strlen( cmdi ) -1 );
-            //strncat( cmdi ,  nwin_currentfile , PATH_MAX - strlen( cmdi ) -1 );
             strncat( cmdi ,  nwin_file[ winsel ] , PATH_MAX - strlen( cmdi ) -1 );
             strncat( cmdi , "\"" , PATH_MAX - strlen( cmdi ) -1 );
 	    if ( nwin_app[ winsel ] >= 1 )
-	    //if ( fexist( nwin_currentfile ) == 1 ) 
-	    // if ( winsel >= 1 )
-              ncurses_runcmd( cmdi );
+            ncurses_runcmd( cmdi );
 	    break;
 
 	   case '!':
@@ -5544,11 +5949,8 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                }
 	       break;
 
-	   case 'M':
-              ncurses_runcmd( " nmenu " );
-              break;
 
-	   case 'B':
+	   case 'X':
               ndesk_menu_beon();
               nwin_sel[winsel] = 1;
 	      nwin_scrolly[winsel] = 0;
@@ -5660,7 +6062,6 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 
         case '(':
         case ')':
-        case 'b':
               attroff( A_BOLD );
               getmaxyx( stdscr, rows, cols);
               ndesk_main_menu();
@@ -5770,7 +6171,8 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 
 
 
-    case KEY_F(9):
+
+    case 28323:
               strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
               if ( fexist( fileselection ) == 1 )
               {
@@ -5827,10 +6229,12 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 
 
 
+           ///////////////// main
            case 'k':
 	   case KEY_UP:
               nwin_sel[winsel]--;
 	      break;
+
            case 'j':
 	   case KEY_DOWN:
               nwin_sel[winsel]++;
@@ -5885,6 +6289,5 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
     
     return 0;
 }
-
 
 
