@@ -16,6 +16,8 @@
 #include <unistd.h>  
 #include <time.h>
 
+//toupper
+//tolower
 
 ////////////////////////////////////////////////
 #if defined(__linux__) // LINUX
@@ -151,11 +153,11 @@ char *strremovelf(char *str)
         ptr[j++]=str[i];
       } 
       ptr[j]='\0';
-      //size_t siz = sizeof ptr ; 
-      //char *r = malloc( sizeof ptr );
-      //return r ? memcpy(r, ptr, siz ) : NULL;
-      char *base = ptr;
-      return (base);
+      size_t siz = sizeof ptr ; 
+      char *r = malloc( sizeof ptr );
+      return r ? memcpy(r, ptr, siz ) : NULL;
+      //char *base = ptr;
+      //return (base);
 }
 
 
@@ -880,9 +882,7 @@ char *strninput( char *myinitstring )
                   getmaxyx( stdscr, rows, cols);
                   attroff( A_REVERSE );
                   for ( fooj = 0 ; fooj <= cols-1;  fooj++)
-                  {
                     mvaddch( rows-1, fooj , ' ' );
-                  }
                   mvprintw( rows-1, 0, ":> %s" , strrlf( strmsg ) );
                   attron( A_REVERSE );
                   printw( " " );
@@ -1126,30 +1126,49 @@ void tinynrclock()
 
 void ndesk_screenlock_text()
 {
-     int fooch ; 
-     attroff( A_BOLD ); 
-     attron( A_REVERSE ); color_set( 0, NULL );
-     gfxbox( 0 , 0 , rows-1 , cols-1 ); 
-     mvprintw( 0, 0, "=======" );
-     mvprintw( 1, 0, "Notepad" );
-     mvprintw( 2, 0, "=======" );
-     mvprintw( 3, 0, "" );
-     mvprintw( 4, 0, " Note list   " );
-     //color_set( 26 , NULL );
-     //attroff( A_REVERSE ); attroff( A_BOLD ); 
-     //printw( "." );
-     //curs_set( 0 );
-     fooch = 0; 
-     while( fooch != KEY_F(10) ) 
+     int fooch ;  int ch; 
+     int posy = 5; int posx = 0; int posi = 0;
+     char strmsg[PATH_MAX];  char charo[PATH_MAX];
+     strncpy( strmsg, "", PATH_MAX );
+     ch = 0; 
+     int i; 
+     while( ( ch != KEY_F(10) )  && ( ch != 27 )) 
      {
         curs_set( 1 );
-        fooch = getch();
+        attroff( A_BOLD ); attron( A_REVERSE ); color_set( 0, NULL );
+        erase();
+        gfxbox( 0 , 0 , rows-1 , cols-1 ); 
+        mvprintw( 0, 0, "=======" );
+        mvprintw( 1, 0, "NOTEPAD" );
+        mvprintw( 2, 0, "=======" );
+        posy = 4; posx=0;
+        for(i=0; strmsg[i]!='\0'; i++)
+        {
+          if( strmsg[i] == 10 )
+          {
+            posy++; posx=0;
+            mvprintw( posy, posx, "");
+          }
+          else
+          {
+            mvprintw( posy, posx, "%c", strmsg[i] );
+            posx++;
+          }
+        }
+        move( posy, posx ); 
+        ch = getch();
         attron( A_REVERSE ); color_set( 0, NULL );
-        if ( fooch != 10 ) 
-           printw( "%c", fooch );
+        if ( ch == 263 )  
+         strncpy( strmsg, strcut( strmsg, 1 , strlen( strmsg ) -1 )  ,  PATH_MAX );
+        else 
+        {
+          snprintf( charo, PATH_MAX , "%s%c",  strmsg, ch );
+	  strncpy(  strmsg,  charo ,  PATH_MAX );
+        }
      }
      curs_set( 1 );
      color_set( 0 , NULL );
+     strncpy( ndesk_clipboard, strmsg, PATH_MAX );
 }
 
 
@@ -1761,7 +1780,6 @@ void printdir()
    //gfxhline( rows-1, 0, cols-1 );
    mvprintw( rows-1, cols/2, "[FILE: %s]", nexp_user_fileselection );
 }
-
 
 
 
@@ -4456,37 +4474,6 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 
 
 
-  /*
-    case 'B':
-         foo = ndesk_menu_select( "1: Bash", "2: File explorer", "5: prboom net", "6: prboom alien", "7: eureka (wad editor)" , "h: Help" , "Q: Quit!" );
-
-         if       ( foo == '1' ) nruncmd( " bash " );
-         else if  ( foo == '2' ) nruncmd( " nexplorer " );
-         else if  ( foo == 'c' ) nruncmd( " bash " );
-         else if  ( foo == '5' ) 
-         {
-                strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
-                ncurses_runwith( " prboom-plus -net 192.168.52.11 -file " , fileselection  ); 
-         }
-
-         else if  ( foo == '6' ) 
-         {
-                strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
-                ncurses_runwith( " prboom-plus -iwad doom2.wad -file aaliens.wad  " , fileselection  ); 
-         }
-
-         else if  ( foo == '7' ) 
-         {
-                strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
-                ncurses_runwith( " eureka -iwad doom2.wad  " , fileselection  ); 
-         }
-
-         else if  ( foo == 'h' ) ndesk_help();
-         else if  ( foo == 'H' ) ndesk_help();
-         else if  ( foo == 'Q' ) ndesktop_gameover = 1;
-         else if  ( foo == 'q' ) ndesktop_gameover = 1;
-	 break;
-    */
 
 
            case '1':
@@ -4690,44 +4677,30 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                  else if ( strcmp( fextension( nwin_currentfile ) , "PDF" ) == 0 )
                    ncurses_runwith( " screen -d -m mupdf " , nwin_currentfile ); 
 
-                 else if ( strcmp( fextension( nwin_currentfile ) , "txt" ) == 0 )
-                   ncurses_runwith( " tcview " , nwin_currentfile ); 
-
                  else if ( strcmp( fextension( nwin_currentfile ) , "html" ) == 0 )
                    ncurses_runwith( " links " , nwin_currentfile ); 
-
                  else if ( strcmp( fextension( nwin_currentfile ) , "htm" ) == 0 )
                    ncurses_runwith( " links " , nwin_currentfile ); 
 
                  else if ( strcmp( fextension( nwin_currentfile ) , "png" ) == 0 )
                    ncurses_runwith( " feh -FZ " , nwin_currentfile ); 
 
-
+                 else if ( strcmp( fextension( nwin_currentfile ) , "sms" ) == 0 )
+                   ncurses_runwith( " mednafen " , nwin_currentfile ); 
                  else if ( strcmp( fextension( nwin_currentfile ) , "gen" ) == 0 )
                    ncurses_runwith( " mednafen " , nwin_currentfile ); 
-
                  else if ( strcmp( fextension( nwin_currentfile ) , "nes" ) == 0 )
                    ncurses_runwith( " mednafen " , nwin_currentfile ); 
-
-
-
-                 else if ( strcmp( fextension( nwin_currentfile ) , "mp4" ) == 0 )
-                   //ncurses_runwith( " mplayer -fs -zoom " , nwin_currentfile ); 
-                   //ncurses_runwith( " mplayer -ao null -zoom " , nwin_currentfile ); 
-                   ncurses_runwith( " mplayer -fs -zoom " , nwin_currentfile ); 
-
+                 else if ( strcmp( fextension( nwin_currentfile ) , "wad" ) == 0 )
+                   ncurses_runwith( " prboom-plus " , nwin_currentfile ); 
 
                  else if ( strcmp( fextension( nwin_currentfile ) , "wav" ) == 0 )
                    ncurses_runwith( " mplayer " , nwin_currentfile ); 
-
                  else if ( strcmp( fextension( nwin_currentfile ) , "WAV" ) == 0 )
                    ncurses_runwith( " mplayer " , nwin_currentfile ); 
 
-
                  else if ( strcmp( fextension( nwin_currentfile ) , "MP3" ) == 0 )
                    ncurses_runwith( " mplayer " , nwin_currentfile ); 
-
-
                  else if ( strcmp( fextension( nwin_currentfile ) , "mp3" ) == 0 )
                    ncurses_runwith( " mplayer " , nwin_currentfile ); 
 
@@ -4751,15 +4724,11 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 
                  else if ( strcmp( fextension( nwin_currentfile ) , "mp4" ) == 0 )
                    ncurses_runwith( " mplayer -fs -zoom " , nwin_currentfile ); 
-
                  else if ( strcmp( fextension( nwin_currentfile ) , "MP4" ) == 0 )
                    ncurses_runwith( " mplayer -fs -zoom " , nwin_currentfile ); 
 
-                 else if ( strcmp( fextension( nwin_currentfile ) , "wad" ) == 0 )
-                   ncurses_runwith( " prboom-plus " , nwin_currentfile ); 
-                 else if ( strcmp( fextension( nwin_currentfile ) , "WAD" ) == 0 )
-                   ncurses_runwith( " prboom-plus " , nwin_currentfile ); 
-
+                 else if ( strcmp( fextension( nwin_currentfile ) , "mpeg" ) == 0 )
+                   ncurses_runwith( " mplayer -fs -zoom " , nwin_currentfile ); 
                  else if ( strcmp( fextension( nwin_currentfile ) , "mpg" ) == 0 )
                    ncurses_runwith( " mplayer -fs -zoom " , nwin_currentfile ); 
 
@@ -4786,14 +4755,21 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                  else if ( strcmp( fextension( nwin_currentfile ) , "csv" ) == 0 )
                    ncurses_runwith( " clisheet " , nwin_currentfile ); 
 
-
                  else if ( strcmp( fextension( nwin_currentfile ) , "ws1" ) == 0 )
                    ncurses_runwith( " freelotus123  " , nwin_currentfile ); 
 
+                 else if ( strcmp( fextension( nwin_currentfile ) , "wrd" ) == 0 )
+                   ncurses_runwith( " cliword  " , nwin_currentfile ); 
 
-                 else if ( strcmp( fextension( nwin_currentfile ) , "wn1" ) == 0 )
-                   ncurses_runwith( " freelotus123  " , nwin_currentfile ); 
+                 else if ( strcmp( fextension( nwin_currentfile ) , "txt" ) == 0 )
+                   ncurses_runwith( " cliword  " , nwin_currentfile ); 
 
+                 else if ( strcmp( fextension( nwin_currentfile ) , "uni" ) == 0 )
+                   ncurses_runwith( " cliword  " , nwin_currentfile ); 
+                   // to view only
+
+                 else if ( strcmp( fextension( nwin_currentfile ) , "eps" ) == 0 )
+                   ncurses_runwith( " epsedit  " , nwin_currentfile ); 
 
 
                  else
@@ -4942,8 +4918,20 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 
     case 'm':
     case KEY_F(9):
-         foo = ndesk_menu_select( "1: Bash", "2: File explorer", "3: Screen lock", "4: Multimedia Box (Box app)", "5 or v: Load vim with Session (mksession)" , "h: Help" , "Q: Quit!" );
-         if       ( foo == '1' ) nruncmd( " bash " );
+         foo = ndesk_menu_select( "1: Run with...", "2: File explorer", "3: Screen lock / Notepad ", "4: Multimedia Box (Box app)", "5 or v: Load vim with mksession" , "h: Help" , "Q: Quit!" );
+         if (       ( foo == '1' ) 
+                 ||       ( foo == '!' ) )
+	      {
+     	        chdir( nwin_path[ winsel ] );
+                strncpy( fileselection, nwin_currentfile , PATH_MAX );
+                color_set( 11, NULL ); attroff( A_REVERSE );
+     	        mvprintw( 0, 0, "PATH: %s", getcwd( foocwd, PATH_MAX ) );
+     	        mvprintw( 1, 0, "FILE: %s", fileselection );
+     	        mvprintw( 2, 0, "Run with given command line." );
+                strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
+                ncurses_runwith( strninput( "" ) , fileselection  ); 
+	      }
+
          else if  ( foo == '2' ) nruncmd( " nexplorer " );
          else if  ( foo == '3' ) ndesk_screenlock_text();
          else if  ( foo == '4' ) nruncmd( "box" );
@@ -5814,13 +5802,58 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                    else if  ( strcmp( cmdi , "display" ) == 0 )  
                    { 
                        color_set( 7, NULL ); attron( A_REVERSE ); attroff( A_BOLD ); mvclear( ); 
-                       mvcenter( 0, "INFORMATION" ); mvprintw( 2, 0, "DISPLAY: %d %d", rows, cols ); getch();   }
+                       foo = 2;
+                       mvcenter( 0, "INFORMATION" ); 
+                       mvprintw( foo++, 0, "DISPLAY: %d %d", rows, cols );
+                       mvprintw( foo++, 0, "HOME:    %s ", getenv( "HOME" ));
+                       mvprintw( foo++, 0, "USER:    %s ", getenv( "USER" ));
+                       mvprintw( foo++, 0, "PATH:    %s ", getcwd( foostr, PATH_MAX ));
+                       getch(); 
+                   } 
+
 
                    else if ( strcmp( cmdi , "lbo" ) == 0 ) 
                    {
                         strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
                         ncurses_runwith( " libreoffice " , fileselection  ); 
                    }
+
+
+else if ( strcmp( cmdi , "boom" ) == 0 ) 
+{
+         foo = ndesk_menu_select( "1: prboom solo mode", "2: File explorer", "5: prboom net", "6: prboom alien", "7: eureka (wad editor)" , "h: Help" , "Q: Quit!" );
+         if       ( foo == '1' ) 
+         {
+                strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
+                snprintf( foostr, PATH_MAX , " prboom-plus -solo-net -warp %s -file ", strninput( "30"  ) );
+                ncurses_runwith( foostr , fileselection  ); 
+         }
+         else if  ( foo == '2' ) nruncmd( " nexplorer " );
+         else if  ( foo == 'c' ) nruncmd( " bash " );
+         else if  ( foo == '5' ) 
+         {
+                strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
+                ncurses_runwith( " prboom-plus -net 192.168.52.11 -file " , fileselection  ); 
+         }
+
+         else if  ( foo == '6' ) 
+         {
+                strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
+                ncurses_runwith( " prboom-plus -iwad doom2.wad -file aaliens.wad  " , fileselection  ); 
+         }
+
+         else if  ( foo == '7' ) 
+         {
+                strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
+                ncurses_runwith( " eureka -iwad doom2.wad  " , fileselection  ); 
+         }
+
+         else if  ( foo == 'h' ) ndesk_help();
+         else if  ( foo == 'H' ) ndesk_help();
+         else if  ( foo == 'Q' ) ndesktop_gameover = 1;
+         else if  ( foo == 'q' ) ndesktop_gameover = 1;
+}
+
 
                    else if ( strcmp( cmdi , "clip2file" ) == 0 ) 
                    {
