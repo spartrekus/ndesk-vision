@@ -4437,6 +4437,9 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
          ncurses_runcmd( " nmenu " );
          break;
 
+
+
+
     case 'b':
               foochg = 0; 
               nexp_user_sel = 1;
@@ -4456,7 +4459,20 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                 else if ( foochg == 's' ) ncurses_runwith( " clisheet " , nexp_user_fileselection );
                 else if ( foochg == 'w' ) ncurses_runwith( " cliword " , nexp_user_fileselection );
                 else if ( foochg == 'o' ) { printfile( nexp_user_fileselection ); getch();  }
+                else if ( foochg == 'c' ) 
+                {
+                      strncpy( foostr , getcwd( foocwd, PATH_MAX ), PATH_MAX );
+                      chdir( getenv( "HOME" ) );
+                      if ( fexist( ".clipboard" ) == 1 )
+                      {
+                        printfile( ".clipboard" ); 
+                        ch = getch(); 
+                        if ( ch == 'v' )  ncurses_runwith( " vim " , ".clipboard" );
+                      }
+                      chdir( foostr );
+                }
               }
+              ch = 0;
               break;
 
 
