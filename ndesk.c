@@ -1653,6 +1653,13 @@ void vim_piles()
 }
 
 
+
+
+
+
+
+
+
    void printfile( char *ttuxfile )
    {
        int posyy = 2 ;  
@@ -1660,19 +1667,6 @@ void vim_piles()
        color_set( 7, NULL );  attron( A_REVERSE );
        gfxbox( 0, cols/2-2, rows-1, cols-1 );
        gfxframe( 0, cols/2-2, rows-1, cols-1 );
-
-       //while ( posyy <= rows-3 )
-       //     mvprintw( posyy++, cols/2-1 , "|" );
-       //{
-        //   mvprintw( posyy, cols/2-1 , "|" );
-
-           //if ( strstr( datacheck[posyy], "XX" ) != 0 ) color_set( 2, NULL );
-           //else if ( strstr( datacheck[posyy], "XX" ) != 0 ) color_set( 3, NULL );
-           //if      ( datacheck[posyy][0] == '!' ) color_set( 2, NULL ); 
-           //else if ( datacheck[posyy][0] == '/' ) color_set( 0, NULL ); 
-           //else if ( datacheck[posyy][0] == '#' ) color_set( 0, NULL ); 
-           //else if ( datacheck[posyy][0] == '>' ) color_set( 3, NULL ); 
-
            if ( fexist( ttuxfile ) == 1 )
            {  
              mvprintw( 0, cols/2, "[FILE: %s]", fbasename( ttuxfile ) );
@@ -1684,7 +1678,6 @@ void vim_piles()
                  {
                    fgets( ptrout , PATH_MAX , fpsource ); 
                    if ( posyy <= rows-3 )
-                    //for( zui = 0 ; zui <= cols/2 -2 ; zui++) 
                     for(zui=0; ptrout[zui]!='\0'; zui++)
                      if ( ptrout[zui] != '\n' )
                       if ( zui <=  cols/2 -2 )
@@ -1694,10 +1687,6 @@ void vim_piles()
              }
              fclose(fpsource);
            }
-           //for( zui = 0 ; zui <= cols/2 -2 ; zui++) 
-           //{
-             //mvprintw( posyy, cols/2 + zui , "%c", datacheck[ posyy ][zui] );
-           //}
    }
 
 
@@ -1777,7 +1766,6 @@ void printdir()
    closedir( dirp );
 
    color_set( 7, NULL ); attroff( A_REVERSE );
-   //gfxhline( rows-1, 0, cols-1 );
    mvprintw( rows-1, cols/2, "[FILE: %s]", nexp_user_fileselection );
 }
 
@@ -5528,10 +5516,23 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                  for( i = 0; i <= cols-1 ; i++) mvaddch( rows-2, i , ' ');
                  for( i = 0; i <= cols-1 ; i++) mvaddch( rows-1, i , ' ');
                  mvprintw( rows-2, 0, "[Internal Command]" ); 
+                // ndesktop_showcurfile();
+     	        chdir( nwin_path[ winsel ] );
+                strncpy( fileselection, nwin_currentfile , PATH_MAX );
+                color_set( 0, NULL ); attroff( A_REVERSE ); attroff( A_BOLD );
+                color_set( 11, NULL ); attroff( A_REVERSE );
+                gfxrectangle( 0 , 0, 3, cols-1);
+                gfxframe(     0 , 0, 3, cols-1);
+     	        mvprintw( 1, 2, "PATH: %s", getcwd( foocwd, PATH_MAX ) );
+     	        mvprintw( 2, 2, "FILE: %s", fileselection );
+                color_set( 10, NULL ); attroff( A_REVERSE ); attroff( A_BOLD );
+                gfxhline( 0 , 0, cols-1);
+                mvprintw( 0, 0, "|Internal Application Command|");
                  color_set( 0, NULL ); attroff( A_REVERSE ); attroff( A_BOLD );
-                 ndesktop_showcurfile();
+                 gfxhline( rows-1 , 0, cols-1);
                  strncpy( cwd, strninput( "" ), PATH_MAX );
                  strncpy( cmdi, cwd , PATH_MAX );
+                 color_set( 0, NULL ); attroff( A_REVERSE ); attroff( A_BOLD );
                  if ( strcmp( cmdi , "" ) != 0 ) 
                  {
 
@@ -5731,16 +5732,8 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
        ncurses_runcmd( " xterm -bg black -fg green -fs 28 -fa 'DejaVu Sans Mono' " );
 
 
-
-
-                   else if ( strcmp( cmdi , "tpiwww" ) == 0 ) 
-                   {
-                       strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
-                       ncurses_runwith( " tpiwww " , fileselection  ); 
-                   }
-
-                   else if ( strcmp( cmdi , "tpiput" ) == 0 ) 
-                       ncurses_runwith( " tpiput " , nwin_file[ winsel ] ); 
+                   else if ( strcmp( cmdi , "less" ) == 0 ) 
+                       ncurses_runwith( " less " , nwin_file[ winsel ] ); 
 
                    else if ( strcmp( cmdi , "sfledit" ) == 0 ) 
                    {
@@ -5770,9 +5763,7 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                    }
 
                    else if ( strcmp( cmdi , "nblue" ) == 0 ) 
-                   {
                        ncurses_runcmd( "nblue " ); 
-                   }
 
                    else if ( strcmp( cmdi , "xclip" ) == 0 ) 
                    {
@@ -5799,7 +5790,9 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                         ncurses_runwith( " freelotus123 " , fileselection  ); 
                    }
 
-                   else if  ( strcmp( cmdi , "display" ) == 0 )  
+                   else if ( ( strcmp( cmdi , "display" ) == 0 )  
+                   ||  ( strcmp( cmdi , "infos" ) == 0 )  
+                   ||  ( strcmp( cmdi , "info" ) == 0 )  )
                    { 
                        color_set( 7, NULL ); attron( A_REVERSE ); attroff( A_BOLD ); mvclear( ); 
                        foo = 2;
