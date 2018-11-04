@@ -5505,9 +5505,18 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
              for( i = 0; i <= cols-1 ; i++) mvaddch( rows-2, i , ' ');
              for( i = 0; i <= cols-1 ; i++) mvaddch( rows-1, i , ' ');
              mvprintw( rows-2, 0, "[System Command Line]" ); 
-             ncurses_runcmd( strninput( "" ) );
+             strncpy( fooline , strninput( "" ), PATH_MAX );
+             if ( strcmp( fooline , "" ) != 0 ) ncurses_runcmd(  fooline  );
 	     break;
-
+	   case '%':
+             color_set( 22, NULL ); attroff( A_REVERSE ); attroff( A_BOLD );
+             color_set( 11, NULL ); attroff( A_REVERSE ); attroff( A_BOLD );
+             for( i = 0; i <= cols-1 ; i++) mvaddch( rows-2, i , ' ');
+             for( i = 0; i <= cols-1 ; i++) mvaddch( rows-1, i , ' ');
+             mvprintw( rows-2, 0, "[System Command Line]" ); 
+             strncpy( fooline , strninput( " screen -d -m " ), PATH_MAX );
+             if ( strcmp( fooline , "" ) != 0 ) ncurses_runcmd(  fooline  );
+	     break;
 
 
 
@@ -5814,6 +5823,9 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 
 else if ( strcmp( cmdi , "boom" ) == 0 ) 
 {
+         attroff( A_REVERSE ); color_set( 0, NULL );
+         gfxhline( rows-2, 0, cols-1);
+         gfxhline( rows-1, 0, cols-1);
          foo = ndesk_menu_select( "1: prboom solo mode", "2: File explorer", "5: prboom net", "6: prboom alien", "7: eureka (wad editor)" , "h: Help" , "Q: Quit!" );
          if       ( foo == '1' ) 
          {
@@ -5823,10 +5835,11 @@ else if ( strcmp( cmdi , "boom" ) == 0 )
          }
          else if  ( foo == '2' ) nruncmd( " nexplorer " );
          else if  ( foo == 'c' ) nruncmd( " bash " );
+
          else if  ( foo == '5' ) 
          {
                 strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
-                ncurses_runwith( " prboom-plus -net 192.168.52.11 -file " , fileselection  ); 
+                ncurses_runwith( " prboom-plus -net 192.168.52.31 -file " , fileselection  ); 
          }
 
          else if  ( foo == '6' ) 
