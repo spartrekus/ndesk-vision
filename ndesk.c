@@ -79,6 +79,46 @@ int  nwin_pile_app[20];
 
 
 
+
+void listdirsearchfile( const char *name, int indent, char *searchitem )
+{
+    DIR *dir;
+    struct dirent *entry;
+
+    if (!(dir = opendir(name)))
+        return;
+
+    while ((entry = readdir(dir)) != NULL) 
+    {
+        if (entry->d_type == DT_DIR) 
+	{
+            char path[1024];
+
+            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+                continue;
+
+            snprintf( path, sizeof(path), "%s/%s", name, entry->d_name);
+
+            listdirsearchfile( path, indent + 2, searchitem );
+        } 
+	else 
+	{
+	    if ( strstr( entry->d_name , searchitem ) != 0 ) 
+	    {
+              printf("%s/%s\n", name , entry->d_name );
+	    }
+        }
+    }
+    closedir(dir);
+}
+
+
+
+
+
+
+
+
 int fexist(char *a_option)
 {
   char dir1[PATH_MAX]; 
@@ -6064,6 +6104,29 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                         ncurses_runwith( " freelotus123 " , fileselection  ); 
                    }
 
+                   else if ( ( strcmp( cmdi , "find" ) == 0 )  
+                   ||  ( strcmp( cmdi , "nfind" ) == 0 )  
+                   ||  ( strcmp( cmdi , "search" ) == 0 )  )
+                   { 
+                       color_set( 7, NULL ); attron( A_REVERSE ); attroff( A_BOLD ); mvclear( ); 
+                       foo = 3;
+                       mvcenter( 0, "== NFIND ==" ); 
+                       mvcenter( 1, "===========" ); 
+                       mvprintw( foo++, 0, "DISPLAY: %d %d", rows, cols );
+                       mvprintw( foo++, 0, "HOME:    %s ", getenv( "HOME" ));
+                       mvprintw( foo++, 0, "USER:    %s ", getenv( "USER" ));
+                       mvprintw( foo++, 0, "PATH:    %s ", getcwd( foostr, PATH_MAX ));
+                       //getch(); 
+                       strncpy( foostr, strninput( rows/2 , "" ), PATH_MAX );
+                       def_prog_mode();
+                       endwin();
+                       listdirsearchfile( ".", 0, foostr );
+                       printf( "<Press Key To Continue>\n" );
+                       getchar();
+                       reset_prog_mode();
+                   } 
+
+
                    else if ( ( strcmp( cmdi , "display" ) == 0 )  
                    ||  ( strcmp( cmdi , "infos" ) == 0 )  
                    ||  ( strcmp( cmdi , "info" ) == 0 )  )
@@ -6075,6 +6138,7 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                        mvprintw( foo++, 0, "HOME:    %s ", getenv( "HOME" ));
                        mvprintw( foo++, 0, "USER:    %s ", getenv( "USER" ));
                        mvprintw( foo++, 0, "PATH:    %s ", getcwd( foostr, PATH_MAX ));
+                       mvprintw( foo++, 0, "HOME:    %s ", getenv( "HOME" ));
                        getch(); 
                    } 
 
