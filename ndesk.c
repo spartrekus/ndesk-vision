@@ -1,4 +1,5 @@
 
+
 //////////////////////////////////////////
 //////////////////////////////////////////
 // NDESK for FreeBSD (GNU)              //
@@ -668,6 +669,13 @@ void nruncmd( char *thecmd   )
     int winsel = 1;
 
 
+
+
+
+
+////////////////////////////////
+////////////////////////////////
+////////////////////////////////
 ////////////////////////////////
 void ncurses_runwait( char *thecmd , char *thestrfile  ) 
 {
@@ -681,9 +689,13 @@ void ncurses_runwait( char *thecmd , char *thestrfile  )
        strncat( cmdi , " \"" , PATH_MAX - strlen( cmdi ) -1 );
        strncat( cmdi , thestrfile , PATH_MAX - strlen( cmdi ) -1 );
        strncat( cmdi , "\" " , PATH_MAX - strlen( cmdi ) -1 );
-       strncat( cmdi , " ; read keypr " , PATH_MAX - strlen( cmdi ) -1 );
+       //strncat( cmdi , " ; read keypr " , PATH_MAX - strlen( cmdi ) -1 );
        printf( "<APP-CMD: %s>\n", cmdi );
        system( cmdi );
+
+       printf( "<Press Return to Continue>\n" ); 
+       getchar();
+
        reset_prog_mode();
 }
 
@@ -937,7 +949,6 @@ void crossgraphvga_colors(void)
 ////////////////////////
 char *strninput( int inputposyt , char *myinitstring )
 {
-
    int strninput_gameover = 0; 
    char strmsg[PATH_MAX];
    char charo[PATH_MAX];
@@ -4427,6 +4438,12 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
    // sel the first winframe #1
    nwin_show[ 1 ] = 1; nwin_app[ 1 ] = 1; winsel = 1;
 
+   foo = 3;
+   nwin_x1[foo]= cols*25/100;
+   nwin_x2[foo]= cols*50/100;
+   nwin_y1[foo]= rows/2-1;
+   nwin_y2[foo]= rows-5;
+
    while( ndesktop_gameover == 0 )
    {
     // main, and clean
@@ -4640,7 +4657,6 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 
 
     case 'B':
-    case 'z':
  	 chdir( nwin_path[ winsel ] );
          strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
          printfile_viewer( fileselection  ); 
@@ -4655,7 +4671,10 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
               nexp_user_scrolly =0 ;
               while ( ( foochg != 'q' ) && ( foochg != 'i' ) &&  ( foochg != 27 ) &&  ( foochg != 'b' )) 
               { 
+                color_set( 0, NULL); attroff( A_REVERSE ); attroff( A_BOLD );
+                gfxhline( rows-1 , 0, cols-1);
                 printdir(); 
+                color_set( 0, NULL); attroff( A_REVERSE ); attroff( A_BOLD );
                 foochg = getch();
                 if ( foochg == 'j' )      nexp_user_sel++; 
                 else if ( foochg == 'k' ) nexp_user_sel--;
@@ -4671,6 +4690,13 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 	           strncpy( ndesk_clipboard, getcwd( foocwd, PATH_MAX) , PATH_MAX);
                 }
 
+                else if  ( foochg == 'V' )  ncurses_runwith( " vim.tiny  " , nexp_user_fileselection );
+                else if  ( foochg == 'v' )  ncurses_runwith( " vim " , nexp_user_fileselection );
+                else if  ( foochg == 'n' )  ncurses_runwith( " screen -d -m nedit  " , nexp_user_fileselection );
+                else if  ( foochg == 'r' )  ncurses_runwith( " tcview  " , nexp_user_fileselection );
+                else if  ( foochg == '!' )  ncurses_runwith( strninput( -1 , "") , nexp_user_fileselection );
+                else if  ( foochg == '$' )  ncurses_runcmd( strninput( -1 , "") );
+
                 else if ( foochg == 'u' ) nexp_user_scrolly-=4;
                 else if ( foochg == 'd' ) nexp_user_scrolly+=4;
                 else if ( foochg == 'n' ) nexp_user_scrolly+=4;
@@ -4679,6 +4705,7 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                 else if ( foochg == 's' ) ncurses_runwith( " clisheet " , nexp_user_fileselection );
                 else if ( foochg == 'w' ) ncurses_runwith( " cliword " , nexp_user_fileselection );
                 else if ( foochg == 'o' ) { printfile( nexp_user_fileselection ); getch();  }
+
                 else if ( foochg == 'c' ) 
                 {
                       strncpy( foostr , getcwd( foocwd, PATH_MAX ), PATH_MAX );
@@ -4692,6 +4719,7 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                       }
                       chdir( foostr );
                 }
+
               }
               ch = 0;
               break;
@@ -4767,18 +4795,68 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
               //nwin_show[winsel]=1;
 	      break;
 
-           case 's':
-	    foo = nwin_sel[winsel]; 
-     	    chdir( nwin_path[ winsel ] );
-            strncpy( fileselection, nwin_currentfile , PATH_MAX );
-	    chdir(   nwin_path[ winsel ] );
-            strncpy( cmdi , " tcview  " , PATH_MAX );
-            strncat( cmdi , " \"" , PATH_MAX - strlen( cmdi ) -1 );
-            strncat( cmdi ,  nwin_file[ winsel ] , PATH_MAX - strlen( cmdi ) -1 );
-            strncat( cmdi , "\"" , PATH_MAX - strlen( cmdi ) -1 );
-	    if ( nwin_app[ winsel ] >= 1 )
-            ncurses_runcmd( cmdi );
-	    break;
+
+          /// to adjacent pan (1 or 2)
+	  case 'e':
+	  case 'o':
+	      if ( nwin_app[ winsel ] == 0 ) nwin_app[ winsel ] = 1;
+
+	      foo = nwin_sel[winsel]; 
+	      if ( ( nwin_app[ winsel ] == 1 ) || ( nwin_app[ winsel ] == 23 ))
+	      {
+	         if ( fexist( nwin_currentfile ) == 2 )
+                 {
+                    chdir( nwin_currentfile );
+	            strncpy( nwin_path[winsel+1], getcwd( foocwd, PATH_MAX) , PATH_MAX);
+                    nwin_app[winsel+1] = 1; 
+                 } 
+	         else if ( fexist( nwin_currentfile ) == 1 )
+                 {
+                   if ( nwin_app[winsel+1] == 1 ) nwin_app[winsel+1] = 2; 
+     	           strncpy( nwin_path[ winsel+1], nwin_path[winsel], PATH_MAX );
+                 } 
+                 else
+                 {
+     	           strncpy( nwin_path[ winsel+1], nwin_path[winsel], PATH_MAX );
+                 } 
+                 nwin_show[winsel+1] = 1; 
+	         nwin_scrolly[winsel+1] = 0;
+	         nwin_sel[winsel+1] = 1;
+		 ////////
+     	         strncpy( nwin_file[ winsel+1], nwin_currentfile, PATH_MAX );
+	      }
+	      break;
+
+          /// to third pan
+	  case 'z':
+	      if ( nwin_app[ winsel ] == 0 ) nwin_app[ winsel ] = 1;
+	      foo = nwin_sel[winsel]; 
+	      if ( ( nwin_app[ winsel ] == 1 ) || ( nwin_app[ winsel ] == 23 ))
+	      {
+	         if ( fexist( nwin_currentfile ) == 2 )
+                 {
+                    chdir( nwin_currentfile );
+	            strncpy( nwin_path[ 3 ], getcwd( foocwd, PATH_MAX) , PATH_MAX);
+                    nwin_app[ 3 ] = 1; 
+                 } 
+	         else if ( fexist( nwin_currentfile ) == 1 )
+                 {
+                   if ( nwin_app[ 3 ] == 1 ) nwin_app[ 3 ] = 2; 
+     	           strncpy( nwin_path[ 3 ], nwin_path[ winsel ], PATH_MAX );
+                 } 
+                 else
+                 {
+     	           strncpy( nwin_path[ 3 ], nwin_path[ winsel ], PATH_MAX );
+                 } 
+                 nwin_show[3] = 1; 
+	         nwin_scrolly[3] = 0;
+	         nwin_sel[3] = 1;
+		 ////////
+     	         strncpy( nwin_file[ 3 ], nwin_currentfile, PATH_MAX );
+                 nwin_sel[3] = 1; nwin_scrolly[3] = 0;
+	      }
+	      break;
+
 
            case 'S':
               nwin_app[winsel] = 1; 
@@ -4793,8 +4871,7 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
   	        ch = getch();
 	        if ( ch == 'g' )
 	        {
-                  nwin_sel[winsel] = 1;
-	          nwin_scrolly[winsel] = 0;
+                  nwin_sel[winsel] = 1; nwin_scrolly[winsel] = 0;
 	        }
 	        else if ( ch == 'v')
 		{
@@ -5998,7 +6075,7 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                    else if ( strcmp( cmdi , "sxterm" ) == 0 ) ncurses_runcmd( " screen -d -m xterm -bg black -fg green " );
 
 
-                   else if ( strcmp( cmdi , "testmenu" ) == 0 ) 
+                   else if ( strcmp( cmdi , "test menu" ) == 0 ) 
                    { foo = ndesk_menu_select( "1: naclock...", "2: ...", "3: three", "4: ...", "5: ..." , "6: ..." , "i: Cancel" ); if ( foo == '1' ) ncurses_runcmd( "naclock" );      }
 
                    else if ( strcmp( cmdi , "naclock" ) == 0 ) ncurses_runcmd( " naclock " );
@@ -6150,10 +6227,14 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                    else if ( strcmp( cmdi , "mpup" ) == 0 ) 
                         ncurses_runwith( "   mplayer -af volume=10.1:0   " , nwin_file[ winsel ] ); 
 
+                   else if ( strcmp( cmdi , "lc" ) == 0 ) ncurses_runcmd( " lc " );
+
+                   else if ( strcmp( cmdi , "nfileman" ) == 0 ) ncurses_runcmd( " nfileman " );
                    else if ( strcmp( cmdi , "tcs" ) == 0 ) ncurses_runcmd( " tcs " );
                    else if ( strcmp( cmdi , "tc" ) == 0 ) ncurses_runcmd( " tc " );
                    else if ( strcmp( cmdi , "tcsp" ) == 0 ) ncurses_runcmd( " tcsp " );
                    else if ( strcmp( cmdi , "mc" ) == 0 ) ncurses_runcmd( " mc " );
+                   else if ( strcmp( cmdi , "ndesk" ) == 0 ) ncurses_runcmd( " ndesk " );
                    else if ( strcmp( cmdi , "nc" ) == 0 ) ncurses_runcmd( " nc " );
                    else if ( strcmp( cmdi , "nbash" ) == 0 ) ncurses_runcmd( " nbash " );
                    else if ( strcmp( cmdi , "nexplorer" ) == 0 ) ncurses_runcmd( " nexplorer " );
@@ -6244,7 +6325,18 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                         ncurses_runwait( " du -hs " ,  fileselection );
                    }
 
+                   else if ( strcmp( cmdi , "test echo" ) == 0 ) 
+                   {
+                        strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
+                        ncurses_runwait( " echo test " ,  fileselection );
+                   }
 
+                   else if ( strcmp( cmdi , "df" ) == 0 ) 
+                   {
+                        strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
+                        //ncurses_runcmd( " df -h  ; read keypress " );
+                        ncurses_runcmd( " watch -e  df -h " );
+                   }
 
                    else if ( strcmp( cmdi , "lbo" ) == 0 ) 
                    {
@@ -6253,7 +6345,11 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                    }
 
 
-
+                   else if ( strcmp( cmdi , "gnumeric" ) == 0 ) 
+                   {
+                        strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
+                        ncurses_runwith( " gnumeric " , fileselection  ); 
+                   }
 
 
                else if ( strcmp( cmdi , "input" ) == 0 ) 
@@ -6315,12 +6411,18 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
             }
 
 
+
+
+
+//////////////////////////////////////////////
+//////////////////////////////////////////////
+//////////////////////////////////////////////
 else if ( strcmp( cmdi , "boom" ) == 0 ) 
 {
          attroff( A_REVERSE ); color_set( 0, NULL );
          gfxhline( rows-2, 0, cols-1);
          gfxhline( rows-1, 0, cols-1);
-         foo = ndesk_menu_select( "1: prboom solo mode", "2: File explorer", "5: prboom net", "6: prboom alien", "7: eureka (wad editor)" , "h: Help" , "Q: Quit!" );
+         foo = ndesk_menu_select( "1: prboom solo mode", "2: File explorer", "3: prboom multiplayer netgame", "4: prboom alien", "5: eureka (wad editor)" , "6: Boom Game Server" , "Q: Quit!" );
 
          if ( foo == '1' ) 
          {
@@ -6329,25 +6431,32 @@ else if ( strcmp( cmdi , "boom" ) == 0 )
                 ncurses_runwith( foostr , fileselection  ); 
          }
 
-         else if  ( foo == '2' ) nruncmd( " nexplorer " );
-         else if  ( foo == 'c' ) nruncmd( " bash " );
-
-         else if  ( foo == '5' ) 
+         else if ( foo == '2' ) 
          {
-                strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
-                ncurses_runwith( " prboom-plus -net 192.168.52.31 -file " , fileselection  ); 
          }
 
-         else if  ( foo == '6' ) 
+         else if  ( foo == '3' ) 
+         {
+                strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
+                ncurses_runwith(  strninput( -1 , " prboom-plus -net 192.168.52.18  -file " ) , fileselection  ); 
+         }
+
+         else if  ( foo == '4' ) 
          {
                 strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
                 ncurses_runwith( " prboom-plus -iwad doom2.wad -file aaliens.wad  " , fileselection  ); 
          }
 
-         else if  ( foo == '7' ) 
+         else if  ( foo == '5' ) 
          {
                 strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
                 ncurses_runwith( " eureka -iwad doom2.wad  " , fileselection  ); 
+         }
+
+         else if  ( foo == '6' ) 
+         {
+                strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
+                ncurses_runcmd( " xterm -e prboom-plus-game-server -N2 & " );
          }
 
          else if  ( foo == 'h' ) ndesk_help();
@@ -6573,36 +6682,6 @@ else if ( strcmp( cmdi , "boom" ) == 0 )
 	      break; */
 
 
-	  case 'e':
-	      if ( nwin_app[ winsel ] == 0 ) nwin_app[ winsel ] = 1;
-
-	      foo = nwin_sel[winsel]; 
-	      if ( ( nwin_app[ winsel ] == 1 ) || ( nwin_app[ winsel ] == 23 ))
-	      {
-	         if ( fexist( nwin_currentfile ) == 2 )
-                 {
-                    chdir( nwin_currentfile );
-	            strncpy( nwin_path[winsel+1], getcwd( foocwd, PATH_MAX) , PATH_MAX);
-                    nwin_app[winsel+1] = 1; 
-                 } 
-	         else if ( fexist( nwin_currentfile ) == 1 )
-                 {
-                   if ( nwin_app[winsel+1] == 1 ) nwin_app[winsel+1] = 2; 
-     	           strncpy( nwin_path[ winsel+1], nwin_path[winsel], PATH_MAX );
-                 } 
-                 else
-                 {
-     	           strncpy( nwin_path[ winsel+1], nwin_path[winsel], PATH_MAX );
-                 } 
-                 nwin_show[winsel+1] = 1; 
-	         nwin_scrolly[winsel+1] = 0;
-	         nwin_sel[winsel+1] = 1;
-		 ////////
-     	         strncpy( nwin_file[ winsel+1], nwin_currentfile, PATH_MAX );
-	      }
-	      break;
-
-
          case 234234: // it was 'b'
 	      if ( nwin_app[ winsel ] == 0 ) nwin_app[ winsel ] = 1;
 	      foo = nwin_sel[winsel]; 
@@ -6642,42 +6721,6 @@ else if ( strcmp( cmdi , "boom" ) == 0 )
 
 
 
-	  case 'o':
-	      if ( nwin_app[ winsel ] == 0 ) nwin_app[ winsel ] = 1;
-	      foo = nwin_sel[winsel]; 
-	      if ( ( nwin_app[ winsel ] == 1 ) || ( nwin_app[ winsel ] == 23 ))
-	      {
-	         if ( fexist( nwin_currentfile ) == 2 )
-                 {
-                    chdir( nwin_currentfile );
-	            strncpy( nwin_path[winsel+1], getcwd( foocwd, PATH_MAX) , PATH_MAX);
-                    nwin_app[winsel+1] = 1; 
-
-                    nwin_show[ winsel+1  ] = 1;
-                    nwin_show[winsel+1] = 1; 
-	            nwin_scrolly[winsel+1] = 0;
-	            nwin_sel[winsel+1] = 1;
-                    //winsel = winsel +1;
-                 } 
-	         else if ( fexist( nwin_currentfile ) == 1 )
-                 {
-                   if ( nwin_app[winsel+1] == 1 ) nwin_app[winsel+1] = 2; 
-     	           strncpy( nwin_path[ winsel+1], nwin_path[winsel], PATH_MAX );
-                   nwin_show[winsel+1] = 1; 
-	           nwin_scrolly[winsel+1] = 0;
-	           nwin_sel[winsel+1] = 1;
-                 } 
-                 else
-                 {
-     	           strncpy( nwin_path[ winsel+1], nwin_path[winsel], PATH_MAX );
-                   nwin_show[winsel+1] = 1; 
-	           nwin_scrolly[winsel+1] = 0;
-	           nwin_sel[winsel+1] = 1;
-                 } 
-		 ////////
-     	         strncpy( nwin_file[ winsel+1], nwin_currentfile, PATH_MAX );
-	      }
-	      break;
 
 
 
@@ -6817,6 +6860,10 @@ else if ( strcmp( cmdi , "boom" ) == 0 )
 	          strncpy( nc_file_filter[ winsel ], "", PATH_MAX);
 	          strncpy( nwin_filter[ winsel ], "", PATH_MAX);
 	      }
+	      break;
+
+           case 's':
+              nwin_scrolly[winsel]++;
 	      break;
 
 
