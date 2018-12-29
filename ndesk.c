@@ -1,5 +1,4 @@
 
-
 //////////////////////////////////////////
 //////////////////////////////////////////
 // NDESK for FreeBSD (GNU)              //
@@ -47,6 +46,61 @@
 
 
 
+///  norm
+#define KRED  "\x1B[31m"
+#define KGRE  "\x1B[32m"
+#define KYEL  "\x1B[33m"
+#define KBLU  "\x1B[34m"
+#define KMAG  "\x1B[35m"
+#define KCYN  "\x1B[36m"
+#define KNRM  "\x1B[0m"
+///  bright
+#define KBGRE  "\x1B[92m"
+#define KBYEL  "\x1B[93m"
+/*
+   printf("%s", KBYEL );
+   printf( " => L%d: Detected section.\n", linecounter );
+   printf("%s", KNRM );
+*/
+
+
+void fseek_filesize(const char *filename)
+{
+    FILE *fp = NULL;
+    long off;
+
+    fp = fopen(filename, "r");
+    if (fp == NULL)
+    {
+        printf("failed to fopen %s\n", filename);
+        exit(EXIT_FAILURE);
+    }
+
+    if (fseek(fp, 0, SEEK_END) == -1)
+    {
+        printf("failed to fseek %s\n", filename);
+        exit(EXIT_FAILURE);
+    }
+
+    off = ftell( fp );
+    if (off == (long)-1)
+    {
+        printf("failed to ftell %s\n", filename);
+        exit(EXIT_FAILURE);
+    }
+
+    //printf("[*] fseek_filesize - file: %s, size: %ld\n", filename, off);
+    printf("%ld\n", off);
+
+    if (fclose(fp) != 0)
+    {
+        printf("failed to fclose %s\n", filename);
+        exit(EXIT_FAILURE);
+    }
+}
+
+
+
 
 int rows,cols; 
 int ndesktop_gameover = 0;
@@ -77,6 +131,9 @@ char nwin_pile_path[255][PATH_MAX];
 #include "../libc/libc-str.c"
 #include "../libc/libc-string.c"
 ///////////////////////////////////////////
+
+
+
 
 
 
@@ -698,6 +755,38 @@ void ncurses_runwait( char *thecmd , char *thestrfile  )
 
        reset_prog_mode();
 }
+
+
+
+
+
+////////////////////////////////
+void ncurses_runcmd_keypress( char *thecmd   )
+{
+       char rncmdi[PATH_MAX];
+       def_prog_mode();
+       endwin();
+
+       strncpy( rncmdi , "  " , PATH_MAX );
+       strncat( rncmdi , thecmd , PATH_MAX - strlen( rncmdi ) -1 );
+       strncat( rncmdi , " " , PATH_MAX - strlen( rncmdi ) -1 );
+       printf( "<CMD START:%s>\n", rncmdi );
+       system( rncmdi );
+
+       printf( "<CMD DONE:%s>\n",  rncmdi );
+       printf("%s", KBYEL );
+       printf( "<Press Return Key To Continue>\n" );
+       printf("%s", KNRM );
+
+       getchar();
+       reset_prog_mode();
+}
+
+
+
+
+
+
 
 
 
@@ -3633,9 +3722,9 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
           //           strncpy( fooline , ncwin_inputboxim( "MKFILE", strtimestamp() ), PATH_MAX );
           if ( strcmp(  foofile  , "" ) != 0 )
           {
-                          fpnew = fopen( foofile , "ab+" );
-                          fputs( "\n", fpnew );
-                          fclose( fpnew );
+                 fpnew = fopen( foofile , "ab+" );
+                     fputs( "\n", fpnew );
+                 fclose( fpnew );
          }
     }
 
@@ -3690,7 +3779,7 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
    //////////////////////////////////////////////
    void tc_file_copy( char *dirtrg, char *dirsrc )
    {
-                      strncpy( cmdi, " cp -r -v " , PATH_MAX );
+                      strncpy( cmdi, " cp -r " , PATH_MAX );
                       strncat( cmdi , " \"" , PATH_MAX - strlen(cmdi) - 1);
                       strncat( cmdi ,  dirsrc , PATH_MAX - strlen(cmdi) - 1);
                       strncat( cmdi , "\"  " , PATH_MAX - strlen(cmdi) - 1);
@@ -3815,7 +3904,7 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                     strncpy( fooline , nwin_currentfile , PATH_MAX );
                     if ( strcmp(  fooline  , "" ) != 0 )
                     {
-                      strncpy( cmdi, " mv  -v " , PATH_MAX );
+                      strncpy( cmdi, " mv   " , PATH_MAX );
                       strncat( cmdi , " \"" , PATH_MAX - strlen(cmdi) - 1);
                       strncat( cmdi ,  nwin_currentfile , PATH_MAX - strlen(cmdi) - 1);
                       strncat( cmdi , "\"  " , PATH_MAX - strlen(cmdi) - 1);
@@ -3843,7 +3932,7 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                     strncpy( fooline , strninput( -1, nwin_currentfile ) , PATH_MAX );
                     if ( strcmp(  fooline  , "" ) != 0 )
                     {
-                      strncpy( cmdi, " mv  -v " , PATH_MAX );
+                      strncpy( cmdi, " mv   " , PATH_MAX );
                       strncat( cmdi , " \"" , PATH_MAX - strlen(cmdi) - 1);
                       strncat( cmdi ,  myfiletoren , PATH_MAX - strlen(cmdi) - 1);
                       strncat( cmdi , "\"  " , PATH_MAX - strlen(cmdi) - 1);
@@ -5560,6 +5649,109 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 
 
 
+	   case KEY_F(5):
+	   case 'c':
+               strncpy( nwin_currentfile, nwin_file[ winsel ] , PATH_MAX );
+               strncpy( nwin_currentpath, nwin_path[ winsel ] , PATH_MAX );
+               strncpy( nwin_currentfile, nwin_file[ winsel ] , PATH_MAX );
+               if ( nwin_show[ 1 ] == 1 )
+               if ( nwin_show[ 2 ] == 1 )
+               if (( winsel == 1 ) || ( winsel == 2 ))
+	       if ( ( fexist( nwin_currentfile ) == 2 ) || ( fexist( nwin_currentfile ) == 1 ))
+               {
+                   chdir( nwin_currentpath );
+                   strncpy( cmdi, " cp -r   " , PATH_MAX );
+                   strncat( cmdi , " \"" , PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi ,   nwin_currentfile  , PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi , "\" " , PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi , "  " , PATH_MAX - strlen(cmdi) - 1);
+                   if ( winsel == 2 ) foo = 1; else if ( winsel == 1 ) foo = 2; 
+                   strncat( cmdi , " \"" , PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi , nwin_path[ foo ] ,  PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi , "\" " , PATH_MAX - strlen(cmdi) - 1);
+                   color_set( 0, NULL ); attron( A_REVERSE ); 
+                   mvprintw( 1,0," PATH:%s", getcwd( cwd, PATH_MAX) );
+                   mvprintw( 3,0," CMD:%s", cmdi );
+                   foo = ncwin_question( "copy this file ?" );
+                   if ( foo == 1 )   ncurses_runcmd( cmdi );
+               }
+               break;
+
+
+	   case KEY_F(6):
+               strncpy( nwin_currentfile, nwin_file[ winsel ] , PATH_MAX );
+               strncpy( nwin_currentpath, nwin_path[ winsel ] , PATH_MAX );
+               strncpy( nwin_currentfile, nwin_file[ winsel ] , PATH_MAX );
+               if ( nwin_show[ 1 ] == 1 )
+               if ( nwin_show[ 2 ] == 1 )
+               if (( winsel == 1 ) || ( winsel == 2 ))
+	       if ( ( fexist( nwin_currentfile ) == 2 )
+	       || ( fexist( nwin_currentfile ) == 1 ))
+               {
+                   chdir( nwin_currentpath );
+                   strncpy( cmdi, " mv   " , PATH_MAX );
+                   strncat( cmdi , " \"" , PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi ,   nwin_currentfile  , PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi , "\" " , PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi , "  " , PATH_MAX - strlen(cmdi) - 1);
+                   if ( winsel == 2 ) foo = 1; else if ( winsel == 1 ) foo = 2; 
+                   strncat( cmdi , " \"" , PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi , nwin_path[ foo ] ,  PATH_MAX - strlen(cmdi) - 1);
+                   strncat( cmdi , "\" " , PATH_MAX - strlen(cmdi) - 1);
+                   color_set( 0, NULL ); attron( A_REVERSE ); 
+                   mvprintw( 1,0," PATH:%s", getcwd( cwd, PATH_MAX) );
+                   mvprintw( 3,0," CMD:%s", cmdi );
+                   foo = ncwin_question( "copy this file ?" );
+                   if ( foo == 1 ) 
+                   {
+                      foo = ncwin_question( "copy this file (sure)?" );
+                      if ( foo == 1 ) 
+                        ncurses_runcmd( cmdi );
+                   }
+               }
+               break;
+
+
+	  case KEY_F(7):
+                color_set( 10, NULL ); attroff( A_REVERSE ); attroff( A_BOLD );
+                color_set( 22 , NULL ); 
+                gfxhline( 0 , 0, cols-1);
+                mvcenter( 0, "| MKDIR |");
+                color_set( 0, NULL ); attroff( A_REVERSE ); attroff( A_BOLD );
+                for( i = 0; i <= cols-1 ; i++) mvaddch( rows-2, i , ' ');
+                for( i = 0; i <= cols-1 ; i++) mvaddch( rows-1, i , ' ');
+                color_set( 0 , NULL ); mvprintw( rows-2, 0, "PATH: %s", getcwd( cwd, PATH_MAX ) ); 
+                //////
+                color_set( 23, NULL ); attron( A_REVERSE );
+                gfxrectangle( rows/2-2 , 0 , rows/2+2  , cols-1);
+                gfxframe(     rows/2-2 , 0 , rows/2+2  , cols-1);
+                mvcenter( rows/2-2, "|New Dir Name|" ); 
+                //////
+                strncpy( foostr, strninput( rows/2 , "" ), PATH_MAX );
+                if ( strcmp( foostr , "" ) != 0 ) 
+                     ncurses_runwith( " mkdir -p " , foostr  ); 
+		break;
+
+	  case KEY_F(8):
+                color_set( 10, NULL ); attroff( A_REVERSE ); attroff( A_BOLD );
+                color_set( 22 , NULL ); 
+                gfxhline( 0 , 0, cols-1);
+                mvcenter( 0, "| MKDIR |");
+                color_set( 0, NULL ); attroff( A_REVERSE ); attroff( A_BOLD );
+                for( i = 0; i <= cols-1 ; i++) mvaddch( rows-2, i , ' ');
+                for( i = 0; i <= cols-1 ; i++) mvaddch( rows-1, i , ' ');
+                color_set( 0 , NULL ); mvprintw( rows-2, 0, "PATH: %s", getcwd( cwd, PATH_MAX ) ); 
+                //////
+                color_set( 23, NULL ); attron( A_REVERSE );
+                gfxrectangle( rows/2-2 , 0 , rows/2+2  , cols-1);
+                gfxframe(     rows/2-2 , 0 , rows/2+2  , cols-1);
+                mvcenter( rows/2-2, "|New File Name|" ); 
+                //////
+                strncpy( foostr, strninput( rows/2 , strtimestamp() ), PATH_MAX );
+                if ( strcmp( foostr , "" ) != 0 ) 
+                    sys_create_file( foostr ); 
+		break;
+
 
 
 
@@ -5617,7 +5809,7 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 	       if ( ( fexist( nwin_currentfile ) == 1 ) ||( fexist( nwin_currentfile ) == 2 ))
                {
                    chdir( nwin_currentpath );
-                   strncpy( cmdi, " cp -r -v  " , PATH_MAX );
+                   strncpy( cmdi, " cp -r   " , PATH_MAX );
                    strncat( cmdi , " \"" , PATH_MAX - strlen(cmdi) - 1);
                    strncat( cmdi ,   nwin_currentfile  , PATH_MAX - strlen(cmdi) - 1);
                    strncat( cmdi , "\" " , PATH_MAX - strlen(cmdi) - 1);
@@ -5636,111 +5828,9 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                break;
 
 
+         // was f5 f6 and f7
+         // f8
 
-	   case KEY_F(5):
-	   case 'c':
-               strncpy( nwin_currentfile, nwin_file[ winsel ] , PATH_MAX );
-               strncpy( nwin_currentpath, nwin_path[ winsel ] , PATH_MAX );
-               strncpy( nwin_currentfile, nwin_file[ winsel ] , PATH_MAX );
-               if ( nwin_show[ 1 ] == 1 )
-               if ( nwin_show[ 2 ] == 1 )
-               if (( winsel == 1 ) || ( winsel == 2 ))
-	       if ( ( fexist( nwin_currentfile ) == 2 )
-	       || ( fexist( nwin_currentfile ) == 1 ))
-               {
-                   chdir( nwin_currentpath );
-                   strncpy( cmdi, " cp -r -v  " , PATH_MAX );
-                   strncat( cmdi , " \"" , PATH_MAX - strlen(cmdi) - 1);
-                   strncat( cmdi ,   nwin_currentfile  , PATH_MAX - strlen(cmdi) - 1);
-                   strncat( cmdi , "\" " , PATH_MAX - strlen(cmdi) - 1);
-                   strncat( cmdi , "  " , PATH_MAX - strlen(cmdi) - 1);
-                   if ( winsel == 2 ) foo = 1; else if ( winsel == 1 ) foo = 2; 
-                   strncat( cmdi , " \"" , PATH_MAX - strlen(cmdi) - 1);
-                   strncat( cmdi , nwin_path[ foo ] ,  PATH_MAX - strlen(cmdi) - 1);
-                   strncat( cmdi , "\" " , PATH_MAX - strlen(cmdi) - 1);
-                   color_set( 0, NULL ); attron( A_REVERSE ); 
-                   mvprintw( 1,0," PATH:%s", getcwd( cwd, PATH_MAX) );
-                   mvprintw( 3,0," CMD:%s", cmdi );
-                   foo = ncwin_question( "copy this file ?" );
-                   if ( foo == 1 )   ncurses_runcmd( cmdi );
-               }
-               break;
-
-
-	   case KEY_F(6):
-               strncpy( nwin_currentfile, nwin_file[ winsel ] , PATH_MAX );
-               strncpy( nwin_currentpath, nwin_path[ winsel ] , PATH_MAX );
-               strncpy( nwin_currentfile, nwin_file[ winsel ] , PATH_MAX );
-               if ( nwin_show[ 1 ] == 1 )
-               if ( nwin_show[ 2 ] == 1 )
-               if (( winsel == 1 ) || ( winsel == 2 ))
-	       if ( ( fexist( nwin_currentfile ) == 2 )
-	       || ( fexist( nwin_currentfile ) == 1 ))
-               {
-                   chdir( nwin_currentpath );
-                   strncpy( cmdi, " mv -v  " , PATH_MAX );
-                   strncat( cmdi , " \"" , PATH_MAX - strlen(cmdi) - 1);
-                   strncat( cmdi ,   nwin_currentfile  , PATH_MAX - strlen(cmdi) - 1);
-                   strncat( cmdi , "\" " , PATH_MAX - strlen(cmdi) - 1);
-                   strncat( cmdi , "  " , PATH_MAX - strlen(cmdi) - 1);
-                   if ( winsel == 2 ) foo = 1; else if ( winsel == 1 ) foo = 2; 
-                   strncat( cmdi , " \"" , PATH_MAX - strlen(cmdi) - 1);
-                   strncat( cmdi , nwin_path[ foo ] ,  PATH_MAX - strlen(cmdi) - 1);
-                   strncat( cmdi , "\" " , PATH_MAX - strlen(cmdi) - 1);
-                   color_set( 0, NULL ); attron( A_REVERSE ); 
-                   mvprintw( 1,0," PATH:%s", getcwd( cwd, PATH_MAX) );
-                   mvprintw( 3,0," CMD:%s", cmdi );
-                   foo = ncwin_question( "copy this file ?" );
-                   if ( foo == 1 ) 
-                   {
-                      foo = ncwin_question( "copy this file (sure)?" );
-                      if ( foo == 1 ) 
-                        ncurses_runcmd( cmdi );
-                   }
-               }
-               break;
-
-
-	  case KEY_F(7):
-                color_set( 10, NULL ); attroff( A_REVERSE ); attroff( A_BOLD );
-                color_set( 22 , NULL ); 
-                gfxhline( 0 , 0, cols-1);
-                mvcenter( 0, "| MKDIR |");
-                color_set( 0, NULL ); attroff( A_REVERSE ); attroff( A_BOLD );
-                for( i = 0; i <= cols-1 ; i++) mvaddch( rows-2, i , ' ');
-                for( i = 0; i <= cols-1 ; i++) mvaddch( rows-1, i , ' ');
-                color_set( 0 , NULL ); mvprintw( rows-2, 0, "PATH: %s", getcwd( cwd, PATH_MAX ) ); 
-                //////
-                color_set( 23, NULL ); attron( A_REVERSE );
-                gfxrectangle( rows/2-2 , 0 , rows/2+2  , cols-1);
-                gfxframe(     rows/2-2 , 0 , rows/2+2  , cols-1);
-                mvcenter( rows/2-2, "|New Dir Name|" ); 
-                //////
-                strncpy( foostr, strninput( rows/2 , "" ), PATH_MAX );
-                if ( strcmp( foostr , "" ) != 0 ) 
-                     ncurses_runwith( " mkdir -p " , foostr  ); 
-		break;
-
-	  case KEY_F(8):
-                //nc_mkfile();
-                color_set( 10, NULL ); attroff( A_REVERSE ); attroff( A_BOLD );
-                color_set( 22 , NULL ); 
-                gfxhline( 0 , 0, cols-1);
-                mvcenter( 0, "| MKDIR |");
-                color_set( 0, NULL ); attroff( A_REVERSE ); attroff( A_BOLD );
-                for( i = 0; i <= cols-1 ; i++) mvaddch( rows-2, i , ' ');
-                for( i = 0; i <= cols-1 ; i++) mvaddch( rows-1, i , ' ');
-                color_set( 0 , NULL ); mvprintw( rows-2, 0, "PATH: %s", getcwd( cwd, PATH_MAX ) ); 
-                //////
-                color_set( 23, NULL ); attron( A_REVERSE );
-                gfxrectangle( rows/2-2 , 0 , rows/2+2  , cols-1);
-                gfxframe(     rows/2-2 , 0 , rows/2+2  , cols-1);
-                mvcenter( rows/2-2, "|New File Name|" ); 
-                //////
-                strncpy( foostr, strninput( rows/2 , strtimestamp() ), PATH_MAX );
-                if ( strcmp( foostr , "" ) != 0 ) 
-                    sys_create_file( foostr ); 
-		break;
 #endif
 
 
@@ -6068,7 +6158,6 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
 
                          ncurses_runcmd( "mutt" );
 
-                   else if ( strcmp( cmdi , "mount" ) == 0 ) ncurses_runcmd( " mount ; read keypress " );
 
                    else if ( strcmp( cmdi , "tcps" ) == 0 ) ncurses_runcmd( " tcps  " );
                    else if ( strcmp( cmdi , "xterm" ) == 0 ) ncurses_runcmd( "xterm -bg black -fg green " );
@@ -6245,6 +6334,24 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                         ncurses_runwith( " freelotus123 " , fileselection  ); 
                    }
 
+                   else if ( strcmp( cmdi , "size" ) == 0 )  
+                   { 
+                         def_prog_mode();
+                         endwin();
+
+                         strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
+                         if ( fexist( fileselection ) == 1 ) 
+                            fseek_filesize( fileselection );
+
+                         printf("%s", KBYEL );
+                         printf( "<Press Return Key To Continue>\n" );
+                         printf("%s", KNRM );
+
+                         getchar();
+                         reset_prog_mode();
+                   } 
+
+
                    else if ( ( strcmp( cmdi , "find" ) == 0 )  
                    ||  ( strcmp( cmdi , "nfind" ) == 0 )  
                    ||  ( strcmp( cmdi , "search" ) == 0 )  )
@@ -6295,7 +6402,7 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                    else if ( strcmp( cmdi , "cp2tmp" ) == 0 ) 
                    {
                             strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
-                            strncpy( cmdi , " cp -r -v   " , PATH_MAX );
+                            strncpy( cmdi , " cp -r    " , PATH_MAX );
                             strncat( cmdi , "  \"" , PATH_MAX - strlen( cmdi ) -1 );
                             strncat( cmdi , fileselection , PATH_MAX - strlen( cmdi ) -1 );
                             strncat( cmdi , "\"  " , PATH_MAX - strlen( cmdi ) -1 );
@@ -6331,12 +6438,44 @@ void ndesktop_ncateditor(  int caty1, int catx1, int caty2, int catx2, char *mye
                         ncurses_runwait( " echo test " ,  fileselection );
                    }
 
+                   else if ( strcmp( cmdi , "mount" ) == 0 ) 
+                        ncurses_runcmd_keypress( " mount  " );
+
                    else if ( strcmp( cmdi , "df" ) == 0 ) 
                    {
-                        strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
+                        //strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
                         //ncurses_runcmd( " df -h  ; read keypress " );
-                        ncurses_runcmd( " watch -e  df -h " );
+                        //ncurses_runcmd( " watch -e  df -h " );
+                        ncurses_runcmd_keypress( "  df -h "  );
                    }
+
+                   else if ( strcmp( cmdi , "copy" ) == 0 ) 
+                   {
+                     strncpy( nwin_currentfile, nwin_file[ winsel ] , PATH_MAX );
+                     strncpy( nwin_currentpath, nwin_path[ winsel ] , PATH_MAX );
+                     strncpy( nwin_currentfile, nwin_file[ winsel ] , PATH_MAX );
+                     if ( nwin_show[ 1 ] == 1 )
+                     if ( nwin_show[ 2 ] == 1 )
+                     if (( winsel == 1 ) || ( winsel == 2 ))
+     	             ////if ( ( fexist( nwin_currentfile ) == 2 ) || ( fexist( nwin_currentfile ) == 1 ))
+                     {
+                        chdir( nwin_currentpath );
+                        strncpy( cmdi, " cp -r  " , PATH_MAX );
+                        strncat( cmdi , " \"" , PATH_MAX - strlen(cmdi) - 1);
+                        strncat( cmdi ,   nwin_currentfile  , PATH_MAX - strlen(cmdi) - 1);
+                        strncat( cmdi , "\" " , PATH_MAX - strlen(cmdi) - 1);
+                        strncat( cmdi , "  " , PATH_MAX - strlen(cmdi) - 1);
+                        if ( winsel == 2 ) foo = 1; else if ( winsel == 1 ) foo = 2; 
+                        strncat( cmdi , " \"" , PATH_MAX - strlen(cmdi) - 1);
+                        strncat( cmdi , nwin_path[ foo ] ,  PATH_MAX - strlen(cmdi) - 1);
+                        strncat( cmdi , "\" " , PATH_MAX - strlen(cmdi) - 1);
+                        color_set( 0, NULL ); attron( A_REVERSE ); 
+                        mvprintw( 1,0," PATH:%s", getcwd( cwd, PATH_MAX) );
+                        mvprintw( 3,0," CMD:%s", cmdi );
+                        foo = ncwin_question( "copy this file ?" );
+                        if ( foo == 1 )   ncurses_runcmd( cmdi );
+                     }
+               }
 
                    else if ( strcmp( cmdi , "lbo" ) == 0 ) 
                    {
@@ -6438,7 +6577,7 @@ else if ( strcmp( cmdi , "boom" ) == 0 )
          else if  ( foo == '3' ) 
          {
                 strncpy( fileselection, nwin_file[ winsel ] , PATH_MAX );
-                ncurses_runwith(  strninput( -1 , " prboom-plus -net 192.168.52.18  -file " ) , fileselection  ); 
+                ncurses_runwith(  strninput( -1 , " prboom-plus -net 192.168.52.11  -file " ) , fileselection  ); 
          }
 
          else if  ( foo == '4' ) 
